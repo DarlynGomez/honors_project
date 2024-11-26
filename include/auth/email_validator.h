@@ -3,7 +3,8 @@
 
 #include <QtCore/QString>  // More powerful version of <string> 
 // Allows seamless use as soneone building a QT-based application
-#include <QtCore/QRegularExpression>
+#include <QtCore/QRegularExpression> // This header allows you to allows you to define 
+// patterns to search for in strings.
 
 // Define Email Validator class which will only enable BMCC domains
 
