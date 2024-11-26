@@ -5,9 +5,7 @@
 #include <QUuid> // Generates unqiue identifiers
 // Using this to create my unqiue session tokens
 
-
 // Define functions from authenticator class
-
 
 // Default Constructor
 Authenticator::Authenticator() {}

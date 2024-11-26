@@ -6,7 +6,7 @@
 #include "ui/login_window.h"         
 #include "ui/registration_window.h"  
 #include "auth/authenticator.h"
-
+#include "ui/mainshop_window.h"
 
 int main(int argc, char *argv[]) {
    QApplication app(argc, argv);
@@ -48,10 +48,12 @@ int main(int argc, char *argv[]) {
    // Create login and registration windows
    LoginWindow* loginWindow = new LoginWindow(authenticator);
    RegistrationWindow* registrationWindow = new RegistrationWindow(authenticator);
+   MainShopWindow* shopWindow = new MainShopWindow(authenticator, "");
   
    // Add windows to stack
    mainWindow.addWidget(loginWindow);
    mainWindow.addWidget(registrationWindow);
+   mainWindow.addWidget(shopWindow);
   
    // Connect signals for switching between windows
    QObject::connect(loginWindow, &LoginWindow::switchToRegister, [&]() {
@@ -118,6 +120,69 @@ int main(int argc, char *argv[]) {
    QObject::connect(registrationWindow, &RegistrationWindow::registrationSuccessful, [&]() {
        mainWindow.setCurrentWidget(loginWindow);
    });
+
+   // Add connection for successful login
+    QObject::connect(loginWindow, &LoginWindow::loginSuccessful, 
+        [&](const QString& email) {
+            // Disable windows during transition
+            loginWindow->setEnabled(false);
+            shopWindow->setEnabled(false);
+            
+            QPropertyAnimation *fadeOut = new QPropertyAnimation(loginWindow, "windowOpacity");
+            fadeOut->setDuration(200);
+            fadeOut->setStartValue(1.0);
+            fadeOut->setEndValue(0.0);
+            
+            QObject::connect(fadeOut, &QPropertyAnimation::finished, [&, email]() {
+                shopWindow->setUserEmail(email);  // Set user email before showing window
+                mainWindow.setCurrentWidget(shopWindow);
+                shopWindow->setWindowOpacity(0.0);
+                
+                QPropertyAnimation *fadeIn = new QPropertyAnimation(shopWindow, "windowOpacity");
+                fadeIn->setDuration(200);
+                fadeIn->setStartValue(0.0);
+                fadeIn->setEndValue(1.0);
+                
+                QObject::connect(fadeIn, &QPropertyAnimation::finished, [&]() {
+                    loginWindow->setEnabled(true);
+                    shopWindow->setEnabled(true);
+                });
+                
+                fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
+            });
+            
+            fadeOut->start(QAbstractAnimation::DeleteWhenStopped);
+        });
+
+    // Add connection for logout with same animation style
+    QObject::connect(shopWindow, &MainShopWindow::logoutRequested, [&]() {
+        shopWindow->setEnabled(false);
+        loginWindow->setEnabled(false);
+        
+        QPropertyAnimation *fadeOut = new QPropertyAnimation(shopWindow, "windowOpacity");
+        fadeOut->setDuration(200);
+        fadeOut->setStartValue(1.0);
+        fadeOut->setEndValue(0.0);
+        
+        QObject::connect(fadeOut, &QPropertyAnimation::finished, [&]() {
+            mainWindow.setCurrentWidget(loginWindow);
+            loginWindow->setWindowOpacity(0.0);
+            
+            QPropertyAnimation *fadeIn = new QPropertyAnimation(loginWindow, "windowOpacity");
+            fadeIn->setDuration(200);
+            fadeIn->setStartValue(0.0);
+            fadeIn->setEndValue(1.0);
+            
+            QObject::connect(fadeIn, &QPropertyAnimation::finished, [&]() {
+                shopWindow->setEnabled(true);
+                loginWindow->setEnabled(true);
+            });
+            
+            fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
+        });
+        
+        fadeOut->start(QAbstractAnimation::DeleteWhenStopped);
+    });
   
    mainWindow.setMinimumSize(1200, 800);  // Minimum size
    mainWindow.resize(1400, 900);          // Initial size

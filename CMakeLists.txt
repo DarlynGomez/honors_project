@@ -21,22 +21,23 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Source files
 set(SOURCES
-   src/main.cpp
-   src/auth/authenticator.cpp
-   src/auth/email_validator.cpp
-   src/auth/user_session.cpp
-   src/ui/login_window.cpp
-   src/ui/registration_window.cpp
+    src/main.cpp
+    src/auth/authenticator.cpp
+    src/auth/email_validator.cpp
+    src/auth/user_session.cpp
+    src/ui/login_window.cpp
+    src/ui/registration_window.cpp
+    src/ui/mainshop_window.cpp  # Add this line
 )
 
-
-# Header files
+#Header files
 set(HEADERS
-   include/auth/authenticator.h
-   include/auth/email_validator.h
-   include/auth/user_session.h
-   include/ui/login_window.h
-   include/ui/registration_window.h
+    include/auth/authenticator.h
+    include/auth/email_validator.h
+    include/auth/user_session.h
+    include/ui/login_window.h
+    include/ui/registration_window.h
+    include/ui/mainshop_window.h  # Add this line
 )
 
 
