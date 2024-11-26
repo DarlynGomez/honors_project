@@ -1,0 +1,13 @@
+build/
+*.user
+*.autosave
+*.o
+*.exe
+*.dll
+*.so
+*.dylib
+.vscode/
+.vs/
+.DS_Store
+CMakeLists.txt.user*
+
