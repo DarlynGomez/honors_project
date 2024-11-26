@@ -8,10 +8,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Set Qt path
+set(CMAKE_PREFIX_PATH "/Users/darlyngomez/Qt/6.6.3/macos")
+
 # Find the required Qt packages
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql Network)
 
-# Add subdirectories
+# Add src subdirectory
 add_subdirectory(src)
 
 # Specify the executable
@@ -19,9 +22,18 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    Qt6::Core
-    Qt6::Widgets
-    Qt6::Sql
-    Qt6::Network
+# Link against our library and Qt
+target_link_libraries(${PROJECT_NAME} 
+    PRIVATE
+        src_lib
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Sql
+        Qt6::Network
+)
+
+# Include directories for the main executable
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
 )
