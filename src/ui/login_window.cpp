@@ -58,7 +58,7 @@ void LoginWindow::setupUI() {
     // Sets widget allignment and spacing
     formLayout->setAlignment(Qt::AlignCenter);  
     formLayout->setSpacing(15);  // Vertical margin
-    formLayout->setContentsMargins(30, 30, 30, 30); // My padding
+    formLayout->setContentsMargins(30, 30, 30, 30);  // My padding
   
    // Title for form
    auto titleLabel = new QLabel("Welcome Back", this);
