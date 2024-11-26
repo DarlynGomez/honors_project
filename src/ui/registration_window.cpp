@@ -1,10 +1,6 @@
-
-
 #include "../include/ui/registration_window.h"
 #include <QVBoxLayout>
 #include <QMessageBox>
-
-
 
 
 RegistrationWindow::RegistrationWindow(Authenticator* auth, QWidget *parent)
@@ -13,7 +9,6 @@ RegistrationWindow::RegistrationWindow(Authenticator* auth, QWidget *parent)
    setupUI();
    setupConnections();
 }
-
 
 void RegistrationWindow::setupUI() {
    auto mainLayout = new QVBoxLayout(this);
@@ -49,7 +44,6 @@ void RegistrationWindow::setupUI() {
    shadowEffect->setColor(QColor(0, 0, 0, 50));
    shadowEffect->setOffset(0, 5);
    formContainer->setGraphicsEffect(shadowEffect);
-
 
    formLayout->setAlignment(Qt::AlignCenter);
    formLayout->setSpacing(15);

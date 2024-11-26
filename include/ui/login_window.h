@@ -1,24 +1,20 @@
 #ifndef LOGIN_WINDOW_H
 #define LOGIN_WINDOW_H
 
-
 #include <QWidget> // Qt Clas to create UI objects
-#include <QLineEdit> // Creates single line input bo
+#include <QLineEdit> // Creates single line input box
 #include <QPushButton> // Gives clickable button
 #include <QLabel> // Displays static, dynamic text, or images
 #include <QVBoxLayout> // Arranges widgets in a vertical column
 #include "../auth/authenticator.h"
 
+#include <QGraphicsEffect>  // For modifying my widgets appearence like CSS
+#include <QPropertyAnimation>  // Smooth time based transtions for objects
+#include <QGraphicsDropShadowEffect>  // Enables drop shadow effects for widgets
 
-#include <QGraphicsEffect>
-#include <QPropertyAnimation>
-#include <QGraphicsDropShadowEffect>
-
-
-class QGraphicsDropShadowEffect;
-class QGraphicsOpacityEffect;
-class QPropertyAnimation;
-
+class QGraphicsDropShadowEffect;  // Access effects
+class QGraphicsOpacityEffect;  // Access effects
+class QPropertyAnimation;  // Access transitions
 
 // My login in UI page
 

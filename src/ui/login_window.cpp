@@ -1,12 +1,9 @@
 #include "ui/login_window.h"
-#include <QMessageBox>
-#include <QVBoxLayout>
-#include <QGraphicsEffect>
-#include <QPropertyAnimation>
-#include <QGraphicsDropShadowEffect>
-
-
-
+#include <QMessageBox>  // Creates simple dialog boxes for displaying messages
+#include <QVBoxLayout>  // Arranges widgets in a vertical column
+#include <QGraphicsEffect>  // For modifying my widgets appearence like CSS
+#include <QPropertyAnimation>  // Smooth time based transtions for objects
+#include <QGraphicsDropShadowEffect>  // Enables drop shadow effects for widgets
 
 // Define functions from LoginWindow class
 
@@ -15,53 +12,55 @@
 LoginWindow::LoginWindow(Authenticator* auth, QWidget *parent)
    : QWidget(parent), authenticator(auth)
 {
-   setupUI();
-   setupConnections();
+   setupUI();  // Set up the user interface
+   setupConnections();  // Create my signal-slot connections
 }
 
 
 // Set up UI structure and widgets
 void LoginWindow::setupUI() {
-   auto mainLayout = new QVBoxLayout(this);
-  
-   // Define color scheme
-   QString sageGreen = "#9CAF88";  // Sage green
-   QString darkBlue = "#2C3E50";   // Dark blue
-   QString lightSage = "#E8F0E3";  // Light sage for hover effects
-  
-   // Create a container widget for the login form
-   auto formContainer = new QWidget(this);
-   auto formLayout = new QVBoxLayout(formContainer);
-   formContainer->setFixedWidth(450);
-   formContainer->setStyleSheet(
-       "QWidget {"
-       "   background-color: white;"
-       "   border-radius: 15px;"
-       "   border: 1px solid #E0E0E0;"
-       "   outline: none;"
-       "}"
-       "QLabel {"
-       "   background: transparent;"
-       "   border: none;"
-       "}"
-       "QPushButton {"
-       "   outline: none;"
-       "}"
+    // Main layout for the my login window
+    auto mainLayout = new QVBoxLayout(this);
+
+    // Define color scheme
+    QString sageGreen = "#9CAF88";  // Sage green
+    QString darkBlue = "#2C3E50";   // Dark blue
+    QString lightSage = "#E8F0E3";  // Light sage for hover effects
+
+    // Creates a container widget for the login form
+    // Uses shadow effect
+    auto formContainer = new QWidget(this);
+    auto formLayout = new QVBoxLayout(formContainer);  // Layout for my widgets inside the container
+    formContainer->setFixedWidth(450); // Fixes width of container to 450 pixels
+    formContainer->setStyleSheet(
+    "QWidget {"
+        "   background-color: white;"  // Background is white
+        "   border-radius: 15px;"   // Rounded container corners
+        "   border: 1px solid #E0E0E0;"  // Solid gray border
+        "   outline: none;"  // Removes ugly outline
+        "}"
+        "QLabel {"
+        "   background: transparent;"  // Transparent background for my text
+        "   border: none;"  // removed borders
+        "}"
+        "QPushButton {"
+        "   outline: none;"  // Removes ugly outline from buttons
+    "}"
    );
   
-   // Add drop shadow effect to form container
-   QGraphicsDropShadowEffect* shadowEffect = new QGraphicsDropShadowEffect;
-   shadowEffect->setBlurRadius(20);
-   shadowEffect->setColor(QColor(0, 0, 0, 50));
-   shadowEffect->setOffset(0, 5);
-   formContainer->setGraphicsEffect(shadowEffect);
+    // Adds a drop shadow effect to the form container
+    QGraphicsDropShadowEffect* shadowEffect = new QGraphicsDropShadowEffect;
+    shadowEffect->setBlurRadius(20);  // Makes shadow not harsh
+    shadowEffect->setColor(QColor(0, 0, 0, 50));  // Black Shadow color, 50% opacity
+    shadowEffect->setOffset(0, 5);  // Offset for shadow
+    formContainer->setGraphicsEffect(shadowEffect);  // Applies shadow to container
 
-
-   formLayout->setAlignment(Qt::AlignCenter);
-   formLayout->setSpacing(15);
-   formLayout->setContentsMargins(30, 30, 30, 30);
+    // Sets widget allignment and spacing
+    formLayout->setAlignment(Qt::AlignCenter);  
+    formLayout->setSpacing(15);  // Vertical margin
+    formLayout->setContentsMargins(30, 30, 30, 30); // My padding
   
-   // Title
+   // Title for form
    auto titleLabel = new QLabel("Welcome Back", this);
    titleLabel->setStyleSheet(
        "font-size: 32px;"
@@ -79,7 +78,7 @@ void LoginWindow::setupUI() {
        "color: #666;"
        "margin-bottom: 20px;"
    );
-   subtitleLabel->setAlignment(Qt::AlignCenter);
+   subtitleLabel->setAlignment(Qt::AlignCenter);  // Center aligned
   
    // Input fields styling
    QString inputStyle =
@@ -97,23 +96,23 @@ void LoginWindow::setupUI() {
        "   outline: none;"
        "}";
   
-   // Email input
+   // Email input field
    auto emailLabel = new QLabel("Email Address", this);
    emailLabel->setStyleSheet("font-weight: bold; color: " + darkBlue + ";");
    emailInput = new QLineEdit(this);
    emailInput->setPlaceholderText("your.email@stu.bmcc.cuny.edu");
    emailInput->setMinimumWidth(350);
-   emailInput->setStyleSheet(inputStyle);
+   emailInput->setStyleSheet(inputStyle);  // Apply my defined input style
   
-   // Password input
+   // Password input field
    auto passwordLabel = new QLabel("Password", this);
    passwordLabel->setStyleSheet("font-weight: bold; color: " + darkBlue + ";");
    passwordInput = new QLineEdit(this);
    passwordInput->setPlaceholderText("Enter your password");
    passwordInput->setEchoMode(QLineEdit::Password);
-   passwordInput->setStyleSheet(inputStyle);
+   passwordInput->setStyleSheet(inputStyle);  // Apply my defined input style
   
-   // Login button with animation effect
+   // Login button with animation effect and hover
    loginButton = new QPushButton("Sign In", this);
    loginButton->setStyleSheet(
        "QPushButton {"
@@ -137,7 +136,7 @@ void LoginWindow::setupUI() {
        "}"
    );
   
-   // Register link button
+   // Register button with animation effect and hover
    registerButton = new QPushButton("New to BMCC E-Store? Create an account", this);
    registerButton->setStyleSheet(
        "QPushButton {"
@@ -153,7 +152,7 @@ void LoginWindow::setupUI() {
        "   text-decoration: underline;"
        "}"
    );
-   registerButton->setCursor(Qt::PointingHandCursor);
+   registerButton->setCursor(Qt::PointingHandCursor);  // Adds hand cursor onhover
   
    // Status label for error messages
    statusLabel = new QLabel(this);
@@ -166,35 +165,35 @@ void LoginWindow::setupUI() {
    statusLabel->setAlignment(Qt::AlignCenter);
   
    // Add widgets to form layout with proper spacing
-   formLayout->addWidget(titleLabel, 0, Qt::AlignCenter);
-   formLayout->addWidget(subtitleLabel, 0, Qt::AlignCenter);
-   formLayout->addSpacing(20);
+   formLayout->addWidget(titleLabel, 0, Qt::AlignCenter);  // Adds my title
+   formLayout->addWidget(subtitleLabel, 0, Qt::AlignCenter); // Adds my subtitle
+   formLayout->addSpacing(20);  // Adds spacing
   
-   formLayout->addWidget(emailLabel);
-   formLayout->addWidget(emailInput);
-   formLayout->addSpacing(10);
+   formLayout->addWidget(emailLabel);  // Adds my email text label
+   formLayout->addWidget(emailInput);  // Adds email input box
+   formLayout->addSpacing(10);  // Adds spacing
   
-   formLayout->addWidget(passwordLabel);
-   formLayout->addWidget(passwordInput);
-   formLayout->addSpacing(20);
+   formLayout->addWidget(passwordLabel);  // Adds my password text label
+   formLayout->addWidget(passwordInput);  // Adds my password input
+   formLayout->addSpacing(20);   // Adds spacing
   
-   formLayout->addWidget(loginButton, 0, Qt::AlignCenter);
-   formLayout->addSpacing(10);
-   formLayout->addWidget(statusLabel);
-   formLayout->addWidget(registerButton, 0, Qt::AlignCenter);
+   formLayout->addWidget(loginButton, 0, Qt::AlignCenter);  // Adds login button
+   formLayout->addSpacing(10);  // Adds spacing
+   formLayout->addWidget(statusLabel);  // Adds status label for errors/success
+   formLayout->addWidget(registerButton, 0, Qt::AlignCenter);  // Adds register button
   
    // Center the form in the main layout
-   mainLayout->addWidget(formContainer, 0, Qt::AlignCenter);
-   setLayout(mainLayout);
+   mainLayout->addWidget(formContainer, 0, Qt::AlignCenter);   // Adds form container to main layout
+   setLayout(mainLayout);  // Sets the main layout
   
-   // Add fade-in animation for the form
+   // Add fade-in animation for the form's entry
    QGraphicsOpacityEffect* opacity = new QGraphicsOpacityEffect(formContainer);
-   formContainer->setGraphicsEffect(opacity);
-   QPropertyAnimation* fadeIn = new QPropertyAnimation(opacity, "opacity");
-   fadeIn->setDuration(500);
-   fadeIn->setStartValue(0);
-   fadeIn->setEndValue(1);
-   fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
+   formContainer->setGraphicsEffect(opacity);  // Set my opacity effect
+   QPropertyAnimation* fadeIn = new QPropertyAnimation(opacity, "opacity");  // Creates fade in animation
+   fadeIn->setDuration(500);  // Duration of animation fade in
+   fadeIn->setStartValue(0);  // Initial opacity
+   fadeIn->setEndValue(1);  // End opacity
+   fadeIn->start(QAbstractAnimation::DeleteWhenStopped);  // Delete animation after it ends
 }
 
 
