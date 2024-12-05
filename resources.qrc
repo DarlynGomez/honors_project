@@ -8,5 +8,6 @@
         <file>images/textbooks/physics.jpg</file>
         <file>images/textbooks/calculus.jpg</file>
         <file>images/textbooks/default_book.jpg</file>
+        <file>images/home/school.jpg</file>
     </qresource>
 </RCC>

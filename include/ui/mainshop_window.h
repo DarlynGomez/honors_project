@@ -27,6 +27,9 @@ public:
     void setUserEmail(const QString& email);
     // Makes my user email accessible
 
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 private slots:
     void handleSearch();    // My slots to respond to signals
     void showTextbooks();
@@ -37,8 +40,19 @@ private slots:
     void showCart();
     void showWishlist();
     void handleLogout();
+    void handleFeaturedTabChange(int index);
 
 private:
+    QVector<QFrame*> featureIndicators; 
+    QStackedWidget* homepageStack; 
+    QVector<QPushButton*> featureTabButtons;
+
+    void setupHeroSection(QVBoxLayout* parentLayout);
+    void setupFeaturedSection(QVBoxLayout* parentLayout);
+    QWidget* createFeaturedTab(const QString& category);
+    void switchFeaturedTab(int index);
+    void showHomepage();
+
     // Core components
     Authenticator* authenticator;   // Manages my user authentication
     QString currentUserEmail;   // Stores the email of the user logged in
@@ -79,6 +93,8 @@ private:
     const QString lightSage = "#E8F0E3";
     const QString white = "#FFFFFF";
     const QString black = "#000000";
+    const QString darkGrey = "#666666";
+    const QString lightGrey = "#D3D3D3";
 
 signals:
     void logoutRequested(); // logout request is emiitted on logout button click

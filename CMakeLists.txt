@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(honors_project VERSION 1.0.0 LANGUAGES CXX)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,7 +17,9 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Create resources
-qt_add_resources(RESOURCES resources.qrc)
+set(RESOURCES
+    resources.qrc
+)
 
 # Source files
 set(SOURCES
@@ -44,7 +49,11 @@ set(HEADERS
 )
 
 # Create executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
+add_executable(${PROJECT_NAME} 
+    ${SOURCES} 
+    ${HEADERS}
+    ${RESOURCES}
+)
 
 # Link Qt libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE

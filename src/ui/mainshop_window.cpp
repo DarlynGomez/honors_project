@@ -5,11 +5,14 @@
 #include <QDir>
 #include <QToolBar>
 #include <QLabel>
+#include <QEvent>
 #include <QFrame>
 #include <QScrollArea>
 #include <QPropertyAnimation>
 #include <QGraphicsDropShadowEffect>
 #include <QGridLayout>
+#include <QDebug>
+
 
 MainShopWindow::MainShopWindow(Authenticator* auth, DatabaseManager* db, const QString& userEmail, QWidget *parent)
     : QMainWindow(parent)
@@ -28,6 +31,7 @@ MainShopWindow::MainShopWindow(Authenticator* auth, DatabaseManager* db, const Q
     , clothingButton(nullptr)
 {
     setupUI();
+    handleFeaturedTabChange(0);
 }
 
 void MainShopWindow::setUserEmail(const QString& email) {
@@ -48,26 +52,43 @@ void MainShopWindow::setupUI() {
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    // // Create container for toolbars
-    // QWidget* toolbarContainer = new QWidget;
-    // QVBoxLayout* toolbarLayout = new QVBoxLayout(toolbarContainer);
-    // toolbarLayout->setSpacing(0);
-    // toolbarLayout->setContentsMargins(0, 0, 0, 0);
-
-    // Add a container for all content
-    QWidget* contentContainer = new QWidget;
-    QVBoxLayout* contentLayout = new QVBoxLayout(contentContainer);
-    contentLayout->setSpacing(0);
-    contentLayout->setContentsMargins(0, 0, 0, 0);
-
-    // Setup components
-    // setUpPreNavBar();
+    // Setup nav and category bars first
     setupNavBar();
     setupCategoryBar();
+
+    // Create stacked widgets for homepage and category content
+    homepageStack = new QStackedWidget(this);
+    contentStack = new QStackedWidget(this);
+
+    // Create and setup homepage
+    QWidget* homePage = new QWidget;
+    QVBoxLayout* homeLayout = new QVBoxLayout(homePage);
+    homeLayout->setSpacing(0);
+    homeLayout->setContentsMargins(0, 0, 0, 0);
+    
+    // Add hero and featured sections to homeLayout instead of central widget
+    QWidget* heroSection = new QWidget;
+    QVBoxLayout* heroLayout = new QVBoxLayout(heroSection);
+    setupHeroSection(heroLayout);
+    homeLayout->addWidget(heroSection);
+
+    QWidget* featuredSection = new QWidget;
+    QVBoxLayout* featuredLayout = new QVBoxLayout(featuredSection);
+    setupFeaturedSection(featuredLayout);
+    homeLayout->addWidget(featuredSection);
+    
+    homepageStack->addWidget(homePage);
+
+    // Setup category pages
     setupContentArea();
 
-    // Add the content container to the main layout
-    mainLayout->addWidget(contentContainer);
+    // Add both stacks to main layout
+    mainLayout->addWidget(homepageStack);
+    mainLayout->addWidget(contentStack);
+
+    // Initially show homepage and hide category content
+    homepageStack->show();
+    contentStack->hide();
 }
 
 // // Setting up my pre navigation bar
@@ -139,10 +160,14 @@ void MainShopWindow::setupNavBar() {
     // BMCC Logo
     QLabel* logo = new QLabel("BMCC E-Store", this);
     logo->setStyleSheet(
-        "font-size: 24px; font-weight: bold; color: " + darkBlue + ";"
+        "font-size: 24px;"
+        "font-weight: bold;"
+        "color: " + darkBlue + ";"
         "font-family: -apple-system, BlinkMacSystemFont;"
         "margin-right: 20px;"
     );
+    logo->setCursor(Qt::PointingHandCursor);
+    logo->installEventFilter(this);
     navBar->addWidget(logo);
 
     // Search Bar
@@ -199,6 +224,16 @@ void MainShopWindow::setupNavBar() {
     // Connect signals
     connect(logoutBtn, &QPushButton::clicked, this, &MainShopWindow::handleLogout);
     connect(searchBar, &QLineEdit::returnPressed, this, &MainShopWindow::handleSearch);
+}
+
+bool MainShopWindow::eventFilter(QObject* watched, QEvent* event) {
+    if (event->type() == QEvent::MouseButtonRelease) {
+        if (QLabel* logo = qobject_cast<QLabel*>(watched)) {
+            showHomepage();
+            return true;
+        }
+    }
+    return QMainWindow::eventFilter(watched, event);
 }
 
 void MainShopWindow::setupCategoryBar() {
@@ -345,28 +380,164 @@ QWidget* MainShopWindow::createCategoryWidget(const QString& category) {
     return widget;
 }
 
+
+
+void MainShopWindow::setupHeroSection(QVBoxLayout* parentLayout) {
+    QWidget* heroWidget = new QWidget;
+    QVBoxLayout* heroLayout = new QVBoxLayout(heroWidget);
+    heroLayout->setContentsMargins(0, 0, 0, 0);
+
+    QLabel* heroImage = new QLabel;
+    QPixmap image(":/images/home/school.jpg");
+    QString imagePath = ":/images/home/school.jpg";
+    QPixmap image(imagePath);
+    qDebug() << "Image path:" << imagePath;
+    if (!image.isNull()) {
+        heroImage->setPixmap(image.scaled(1200, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else {
+        heroImage->setText("Image not found");
+    }
+    heroImage->setMinimumHeight(400);
+    heroImage->setStyleSheet("QLabel { background-color: #f0f0f0; }");
+    heroImage->setAlignment(Qt::AlignCenter);
+
+    heroLayout->addWidget(heroImage);
+    parentLayout->addWidget(heroWidget);
+}
+
+void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
+    QWidget* featuredWidget = new QWidget;
+    QVBoxLayout* featuredLayout = new QVBoxLayout(featuredWidget);
+    featuredLayout->setSpacing(20);
+    featuredLayout->setContentsMargins(40, 40, 40, 40);
+
+    // Title
+    QLabel* title = new QLabel("Featured Products");
+    title->setStyleSheet(
+        "font-size: 32px;"
+        "font-weight: bold;"
+        "color: " + darkBlue + ";"
+    );
+    title->setAlignment(Qt::AlignCenter);
+    featuredLayout->addWidget(title);
+
+    // Tabs container
+    QWidget* tabsWidget = new QWidget;
+    QHBoxLayout* tabsLayout = new QHBoxLayout(tabsWidget);
+    tabsLayout->setSpacing(0);
+    tabsLayout->setContentsMargins(0, 0, 0, 0);
+    tabsLayout->setAlignment(Qt::AlignCenter);
+
+    // Create tab buttons
+    QStringList categories = {"Tech", "Clothing", "Supplies"};
+    for (int i = 0; i < categories.size(); ++i) {
+        QPushButton* tab = new QPushButton(categories[i]);
+        tab->setFixedWidth(200);
+        tab->setStyleSheet(
+            "QPushButton {"
+            "    border: none;"
+            "    padding: 15px;"
+            "    font-size: 16px;"
+            "    color: " + darkBlue + ";"
+            "    background: none;"
+            "}"
+            "QPushButton:hover {"
+            "    color: " + sageGreen + ";"
+            "}"
+        );
+        connect(tab, &QPushButton::clicked, this, [this, i]() { handleFeaturedTabChange(i); });
+        featureTabButtons.append(tab);
+        tabsLayout->addWidget(tab);
+    }
+
+    // Create indicator container
+    QWidget* indicatorContainer = new QWidget;
+    QHBoxLayout* indicatorLayout = new QHBoxLayout(indicatorContainer);
+    indicatorLayout->setSpacing(0);
+    indicatorLayout->setContentsMargins(0, 0, 0, 0);
+    indicatorLayout->setAlignment(Qt::AlignCenter);
+
+    // Create three separate indicator lines
+    for (int i = 0; i < 3; ++i) {
+        QFrame* line = new QFrame;
+        line->setFixedHeight(3);
+        line->setFixedWidth(200);
+        line->setStyleSheet("background-color: " + lightGrey + "; margin: 0;");
+        featureIndicators.append(line);
+        indicatorLayout->addWidget(line);
+    }
+
+    // Add widgets to layout
+    QVBoxLayout* tabContainerLayout = new QVBoxLayout;
+    tabContainerLayout->addWidget(tabsWidget);
+    tabContainerLayout->addWidget(indicatorContainer);
+    tabContainerLayout->setSpacing(0);
+    tabContainerLayout->setContentsMargins(0, 0, 0, 0);
+    featuredLayout->addLayout(tabContainerLayout);
+
+    // Add to parent layout
+    parentLayout->addWidget(featuredWidget);
+}
+
+void MainShopWindow::handleFeaturedTabChange(int index) {
+    // Change the tab line color
+    for (int i = 0; i < featureIndicators.size(); ++i) {
+        featureIndicators[i]->setStyleSheet(
+            "background-color: " + (i == index ? darkGrey : lightGrey) + ";"
+        );
+    }
+
+    // Update tab text label color
+    for (int i = 0; i < featureTabButtons.size(); ++i) {
+        featureTabButtons[i]->setStyleSheet(
+            "QPushButton {"
+            "    border: none;"
+            "    padding: 15px;"
+            "    font-size: 16px;"
+            "    color: " + (i == index ? sageGreen : darkBlue) + ";"
+            "}"
+            "QPushButton:hover {"
+            "    color: " + sageGreen + ";"
+            "}"
+        );
+    }
+}
+
+
+
+
 // Implement slot methods
 void MainShopWindow::handleSearch() {
     // Implement search functionality
 }
 
 void MainShopWindow::showTextbooks() {
+    homepageStack->hide();
+    contentStack->show();
     contentStack->setCurrentIndex(0);
 }
 
 void MainShopWindow::showFurniture() {
+    homepageStack->hide();
+    contentStack->show();
     contentStack->setCurrentIndex(1);
 }
 
 void MainShopWindow::showElectronics() {
+    homepageStack->hide();
+    contentStack->show();
     contentStack->setCurrentIndex(2);
 }
 
 void MainShopWindow::showSchoolSupplies() {
+    homepageStack->hide();
+    contentStack->show();
     contentStack->setCurrentIndex(3);
 }
 
 void MainShopWindow::showClothing() {
+    homepageStack->hide();
+    contentStack->show();
     contentStack->setCurrentIndex(4);
 }
 
@@ -381,4 +552,9 @@ void MainShopWindow::showWishlist() {
 void MainShopWindow::handleLogout() {
     authenticator->logout(currentUserEmail);
     emit logoutRequested();
+}
+
+void MainShopWindow::showHomepage() {
+    contentStack->hide();
+    homepageStack->show();
 }
