@@ -1,6 +1,8 @@
 #include "../include/ui/mainshop_window.h"
+#include "ui/textbook_page.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QDir>
 #include <QToolBar>
 #include <QLabel>
 #include <QFrame>
@@ -9,9 +11,10 @@
 #include <QGraphicsDropShadowEffect>
 #include <QGridLayout>
 
-MainShopWindow::MainShopWindow(Authenticator* auth, const QString& userEmail, QWidget *parent)
+MainShopWindow::MainShopWindow(Authenticator* auth, DatabaseManager* db, const QString& userEmail, QWidget *parent)
     : QMainWindow(parent)
     , authenticator(auth)
+    , dbManager(db)
     , currentUserEmail(userEmail)
     , contentStack(nullptr)
     , navBar(nullptr)
@@ -45,6 +48,12 @@ void MainShopWindow::setupUI() {
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
+    // // Create container for toolbars
+    // QWidget* toolbarContainer = new QWidget;
+    // QVBoxLayout* toolbarLayout = new QVBoxLayout(toolbarContainer);
+    // toolbarLayout->setSpacing(0);
+    // toolbarLayout->setContentsMargins(0, 0, 0, 0);
+
     // Add a container for all content
     QWidget* contentContainer = new QWidget;
     QVBoxLayout* contentLayout = new QVBoxLayout(contentContainer);
@@ -52,12 +61,68 @@ void MainShopWindow::setupUI() {
     contentLayout->setContentsMargins(0, 0, 0, 0);
 
     // Setup components
+    // setUpPreNavBar();
     setupNavBar();
     setupCategoryBar();
     setupContentArea();
 
     // Add the content container to the main layout
     mainLayout->addWidget(contentContainer);
+}
+
+// // Setting up my pre navigation bar
+// void MainShopWindow::setUpPreNavBar() {
+//     preNavBar = new QToolBar();
+//     preNavBar->setFixedHeight(40);
+//     preNavBar->setStyleSheet(
+//         "QToolBar {"
+//         "    background-color: " + sageGreen + ";"
+//         "    padding: 0;"
+//         "    margin: 0;"
+//         "    position: absolute;"
+//         "    top: 0;"
+//         "    left: 0;"
+//         "    right: 0;"
+//         "}"
+//     );
+
+//     QWidget* container = new QWidget();
+//     QHBoxLayout* layout = new QHBoxLayout(container);
+//     layout->setContentsMargins(0, 0, 20, 0);
+//     layout->setAlignment(Qt::AlignRight);
+
+//     // Add buttons with style
+//     QString buttonStyle = 
+//         "QPushButton {"
+//         "    width: 30px;"
+//         "    height: 30px;"
+//         "    border: none;"
+//         "    padding: 5px;"
+//         "    background-color: transparent;"
+//         "}"
+//         "QPushButton:hover {"
+//         "    background-color: rgba(255, 255, 255, 0.2);"
+//         "    border-radius: 15px;"
+//         "}";
+
+//     profileButton = createPreNavButton(":/Images/profileIcon.png", buttonStyle);
+//     wishlistButton2 = createPreNavButton(":/Images/wishlistIcon.png", buttonStyle);
+//     cartButton2 = createPreNavButton(":/Images/cartIcon.png", buttonStyle);
+
+//     layout->addWidget(profileButton);
+//     layout->addWidget(wishlistButton2);
+//     layout->addWidget(cartButton2);
+    
+//     preNavBar->addWidget(container);
+//     addToolBar(Qt::TopToolBarArea, preNavBar);
+// }
+
+QPushButton* MainShopWindow::createPreNavButton(const QString& iconPath, const QString& style) {
+   QPushButton* button = new QPushButton;
+   button->setIcon(QIcon(iconPath));
+   button->setIconSize(QSize(20, 20));
+   button->setStyleSheet(style);
+   return button;
 }
 
 void MainShopWindow::setupNavBar() {
@@ -106,6 +171,8 @@ void MainShopWindow::setupNavBar() {
     // Cart and Wishlist Buttons
     cartButton = createNavButton("", "Cart");
     wishlistButton = createNavButton("", "Wishlist");
+
+
     
     // User section
     QLabel* userLabel = new QLabel(currentUserEmail);
@@ -183,15 +250,17 @@ void MainShopWindow::setupStyles() {
     // Additional styles can be added here
 }
 
+
 QPushButton* MainShopWindow::createNavButton(const QString& iconPath, const QString& text) {
     QPushButton* button = new QPushButton(text);
     button->setStyleSheet(
         "QPushButton {"
-        "    color: " + darkBlue + ";"
-        "    border: none;"
-        "    padding: 8px 15px;"
-        "    font-size: 14px;"
-        "    border-radius: 15px;"
+        "   color: " + darkBlue + ";"
+        "   border: none;"
+        "   padding: 8px 15px;"
+        "   font-size: 14px;"
+        "   border-radius: 15px;"
+        "   background-image: " + iconPath + ";"
         "}"
         "QPushButton:hover {"
         "    background-color: " + lightSage + ";"
@@ -225,6 +294,9 @@ QPushButton* MainShopWindow::createCategoryButton(const QString& text) {
 }
 
 QWidget* MainShopWindow::createCategoryWidget(const QString& category) {
+    if (category == "Textbooks") {
+        return new TextbookPage(dbManager, this);
+    }
     QWidget* widget = new QWidget;
     QVBoxLayout* layout = new QVBoxLayout(widget);
     

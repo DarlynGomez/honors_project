@@ -1,0 +1,13 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/images">
+        <file>resources/images/textbooks/cpp_book.jpg</file>
+        <file>resources/images/textbooks/macro_econ.jpg</file>
+        <file>resources/images/textbooks/gilgamesh.jpg</file>
+        <file>resources/images/textbooks/frankenstein.jpg</file>
+        <file>resources/images/textbooks/never_let_me_go.jpg</file>
+        <file>resources/images/textbooks/physics.jpg</file>
+        <file>resources/images/textbooks/calculus.jpg</file>
+        <file>resources/images/textbooks/default_book.jpg</file>
+    </qresource>
+</RCC>

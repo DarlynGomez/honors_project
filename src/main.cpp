@@ -44,11 +44,12 @@ int main(int argc, char *argv[]) {
   
    // Create authenticator object to handle my login&registration
    Authenticator* authenticator = new Authenticator();
+   DatabaseManager* dbManager = new DatabaseManager();
   
    // Create login and registration windows
    LoginWindow* loginWindow = new LoginWindow(authenticator);  // My Login INterface
    RegistrationWindow* registrationWindow = new RegistrationWindow(authenticator); // My registration interface
-   MainShopWindow* shopWindow = new MainShopWindow(authenticator, "");  // My main shop interface
+   MainShopWindow* shopWindow = new MainShopWindow(authenticator, dbManager, "");  // My main shop interface
   
    // Add windows to stack -> the mainWindow container
    mainWindow.addWidget(loginWindow);   // Adds login window to the stack
