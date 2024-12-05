@@ -134,12 +134,13 @@ void TextbookPage::setupFilterPanel() {
 
 QWidget* TextbookPage::createBookCard(const Textbook& book) {
    QWidget* card = new QWidget;
-   card->setFixedSize(300, 400);
+   card->setFixedSize(500, 400);
    card->setStyleSheet(
-       "QWidget {"
-       "    background-color: white;"
-       "    border: 1px solid #E0E0E0;"
-       "    border-radius: 8px;"
+            "QWidget {"
+            "background-color: white;"
+            "border: 1px solid #E0E0E0;"
+            "border-radius: 8px;"
+            "outline: none;"
        "}"
    );
    
@@ -151,7 +152,7 @@ QWidget* TextbookPage::createBookCard(const Textbook& book) {
    QLabel* imageLabel = new QLabel(card);
    QPixmap bookImage(book.getImagePath());
    if (bookImage.isNull()) {
-       bookImage = QPixmap(":/resources/images/textbooks/default_book.jpg");
+       bookImage = QPixmap(":/images/textbooks/default_book.jpg");
    }
    imageLabel->setPixmap(bookImage.scaled(200, 250, Qt::KeepAspectRatio, Qt::SmoothTransformation));
    imageLabel->setAlignment(Qt::AlignCenter);
@@ -271,7 +272,7 @@ void TextbookPage::handlePrevPage() {
 }
 
 void TextbookPage::loadDepartments() {
-    departmentCombo->addItem("");  // Empty option for no filter
+    departmentCombo->addItem("Department");  // Empty option for no filter
     departmentCombo->addItem("Computer Science");
     departmentCombo->addItem("Social Sciences, Human Services & Criminal Justice");
     departmentCombo->addItem("English");
@@ -280,7 +281,7 @@ void TextbookPage::loadDepartments() {
 }
 
 void TextbookPage::loadCategories() {
-    categoryCombo->addItem("");  // Empty option for no filter
+    categoryCombo->addItem("Course Section");  // Empty option for no filter
     categoryCombo->addItem("CSC");
     categoryCombo->addItem("ECO");
     categoryCombo->addItem("ENG");
