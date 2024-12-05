@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
    QApplication app(argc, argv);    // Initializing QT App
 
 
-   // Add global styles
+   // Add my global styles
    app.setStyleSheet(R"(
        * {
            outline: none;  /* Removes ugly focused rectangles from ALL objects */

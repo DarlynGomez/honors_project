@@ -1,30 +1,32 @@
 #ifndef MAINSHOP_WINDOW_H
 #define MAINSHOP_WINDOW_H
 
-#include <QMainWindow>
-#include <QToolBar>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QStackedWidget>
-#include <QLabel>
+#include <QMainWindow> // This holds the MAIN application window
+#include <QToolBar> // My nav menu
+#include <QLineEdit>  // Singular line of inputeed text
+#include <QPushButton> // Gives clickable button
+#include <QStackedWidget> // Switchign between widgets or pages
+#include <QLabel> // Displays static, dynamic text, or images
 #include "../auth/authenticator.h"
 
-#include <QGraphicsEffect>
-#include <QPropertyAnimation>
-#include <QGraphicsDropShadowEffect>
+#include <QGraphicsEffect>  // For modifying my widgets appearence like CSS
+#include <QPropertyAnimation>  // Smooth time based transtions for objects
+#include <QGraphicsDropShadowEffect>  // Enables drop shadow effects for widgets
 
-class QHBoxLayout;
+class QHBoxLayout; 
 class QVBoxLayout;
 
 class MainShopWindow : public QMainWindow {
-    Q_OBJECT
+    Q_OBJECT    // How I make my slots and signal connections
 
 public:
     explicit MainShopWindow(Authenticator* auth, const QString& userEmail, QWidget *parent = nullptr);
+    // Accesses my user information
     void setUserEmail(const QString& email);
+    // Makes my user email accessible
 
 private slots:
-    void handleSearch();
+    void handleSearch();    // My slots to respond to signals
     void showTextbooks();
     void showFurniture();
     void showElectronics();
@@ -36,44 +38,44 @@ private slots:
 
 private:
     // Core components
-    Authenticator* authenticator;
-    QString currentUserEmail;
-    QStackedWidget* contentStack;
+    Authenticator* authenticator;   // Manages my user authentication
+    QString currentUserEmail;   // Stores the email of the user logged in
+    QStackedWidget* contentStack;   // Stack for displaying my windows
 
     // Navigation components
-    QToolBar* navBar;
-    QLineEdit* searchBar;
-    QPushButton* cartButton;
-    QPushButton* wishlistButton;
+    QToolBar* navBar;   // My navigation bar
+    QLineEdit* searchBar;   // My seach bar input box
+    QPushButton* cartButton;    // Open cart button
+    QPushButton* wishlistButton;    // Wishlist button
     
     // Category buttons
-    QPushButton* textbooksButton;
-    QPushButton* furnitureButton;
-    QPushButton* electronicsButton;
-    QPushButton* suppliesButton;
-    QPushButton* clothingButton;
+    QPushButton* textbooksButton;   // Textbook category button
+    QPushButton* furnitureButton;   // Furniture category button
+    QPushButton* electronicsButton;   // Electronic category button
+    QPushButton* suppliesButton;   // Supplies category button
+    QPushButton* clothingButton;   // Clothing category button
 
     // Setup methods
-    void setupUI();
-    void setupNavBar();
-    void setupCategoryBar();
-    void setupContentArea();
-    void setupStyles();
+    void setupUI(); // Loads in my UI application
+    void setupNavBar(); // Loads in my nav bar
+    void setupCategoryBar();  // Loads in my category bar
+    void setupContentArea();    // Loads in my content area, under category bar
+    void setupStyles();  // Styles for my main shop/ global
     
     // Helper methods
-    QPushButton* createNavButton(const QString& iconPath, const QString& text);
-    QPushButton* createCategoryButton(const QString& text);
-    QWidget* createCategoryWidget(const QString& category);
+    QPushButton* createNavButton(const QString& iconPath, const QString& text); // Automatically creates new nav bar button
+    QPushButton* createCategoryButton(const QString& text); // Makes new category button
+    QWidget* createCategoryWidget(const QString& category); // Makes new category widget to add to stack
 
-    // Style constants
-    const QString sageGreen = "#9CAF88";
+    // My Main Style Colors
+    const QString sageGreen = "#9CAF88";    
     const QString darkBlue = "#2C3E50";
     const QString lightSage = "#E8F0E3";
     const QString white = "#FFFFFF";
     const QString black = "#000000";
 
 signals:
-    void logoutRequested();
+    void logoutRequested(); // logout request is emiitted on logout button click
 };
 
 #endif
