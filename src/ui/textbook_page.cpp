@@ -272,7 +272,7 @@ void TextbookPage::handlePrevPage() {
 }
 
 void TextbookPage::loadDepartments() {
-    departmentCombo->addItem("Department");  // Empty option for no filter
+    departmentCombo->addItem("");  // Empty option for no filter
     departmentCombo->addItem("Computer Science");
     departmentCombo->addItem("Social Sciences, Human Services & Criminal Justice");
     departmentCombo->addItem("English");
@@ -281,7 +281,7 @@ void TextbookPage::loadDepartments() {
 }
 
 void TextbookPage::loadCategories() {
-    categoryCombo->addItem("Course Section");  // Empty option for no filter
+    categoryCombo->addItem("");  // Empty option for no filter
     categoryCombo->addItem("CSC");
     categoryCombo->addItem("ECO");
     categoryCombo->addItem("ENG");

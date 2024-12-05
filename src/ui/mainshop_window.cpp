@@ -390,7 +390,6 @@ void MainShopWindow::setupHeroSection(QVBoxLayout* parentLayout) {
     QLabel* heroImage = new QLabel;
     QPixmap image(":/images/home/school.jpg");
     QString imagePath = ":/images/home/school.jpg";
-    QPixmap image(imagePath);
     qDebug() << "Image path:" << imagePath;
     if (!image.isNull()) {
         heroImage->setPixmap(image.scaled(1200, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation));
