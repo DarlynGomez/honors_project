@@ -3,6 +3,7 @@
 
 #include <QtCore/QVector>
 #include <QtSql/QSqlDatabase>
+#include <QCoreApplication>
 #include "textbook.h"
 
 class DatabaseManager {

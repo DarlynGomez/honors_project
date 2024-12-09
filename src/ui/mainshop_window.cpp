@@ -11,6 +11,7 @@
 #include <QPropertyAnimation>
 #include <QGraphicsDropShadowEffect>
 #include <QGridLayout>
+#include <QCoreApplication>
 #include <QDebug>
 
 
@@ -193,9 +194,41 @@ void MainShopWindow::setupNavBar() {
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     navBar->addWidget(spacer);
 
-    // Cart and Wishlist Buttons
-    cartButton = createNavButton("", "Cart");
-    wishlistButton = createNavButton("", "Wishlist");
+    // Cart Button with Icon
+    cartButton = new QPushButton(this);
+    QString cartIconPath = QCoreApplication::applicationDirPath() + "/../assets/images/nav/cartIcon.png";
+    cartButton->setIcon(QIcon(cartIconPath));
+    cartButton->setIconSize(QSize(24, 24));  // Adjust icon size as needed
+    cartButton->setStyleSheet(
+        "QPushButton {"
+        "    border: none;"
+        "    padding: 8px;"
+        "    border-radius: 20px;"
+        "    background-color: transparent;"
+        "}"
+        "QPushButton:hover {"
+        "    background-color: " + lightSage + ";"
+        "}"
+    );
+
+    // Wishlist Button with Icon
+    wishlistButton = new QPushButton(this);
+    QString wishlistIconPath = QCoreApplication::applicationDirPath() + "/../assets/images/nav/wishlistIcon.png";
+    wishlistButton->setIcon(QIcon(wishlistIconPath));
+    wishlistButton->setIconSize(QSize(24, 24));  // Adjust icon size as needed
+    wishlistButton->setStyleSheet(
+        "QPushButton {"
+        "    border: none;"
+        "    padding: 8px;"
+        "    border-radius: 20px;"
+        "    background-color: transparent;"
+        "}"
+        "QPushButton:hover {"
+        "    background-color: " + lightSage + ";"
+        "}"
+    );
+
+
 
 
     
@@ -214,6 +247,7 @@ void MainShopWindow::setupNavBar() {
         "QPushButton:hover { color: " + sageGreen + "; }"
     );
 
+    // Add buttons to navbar
     navBar->addWidget(cartButton);
     navBar->addWidget(wishlistButton);
     navBar->addWidget(userLabel);
@@ -385,20 +419,21 @@ QWidget* MainShopWindow::createCategoryWidget(const QString& category) {
 void MainShopWindow::setupHeroSection(QVBoxLayout* parentLayout) {
     QWidget* heroWidget = new QWidget;
     QVBoxLayout* heroLayout = new QVBoxLayout(heroWidget);
-    heroLayout->setContentsMargins(0, 0, 0, 0);
+    heroLayout->setContentsMargins(0, 0, 0, 0);  // Remove all margins
+    heroLayout->setSpacing(0);  // Remove spacing
 
     QLabel* heroImage = new QLabel;
-    QPixmap image(":/images/home/school.jpg");
-    QString imagePath = ":/images/home/school.jpg";
-    qDebug() << "Image path:" << imagePath;
+    QString imagePath = QCoreApplication::applicationDirPath() + "/../assets/images/home/school.jpg";
+    QPixmap image(imagePath);
+    
     if (!image.isNull()) {
-        heroImage->setPixmap(image.scaled(1200, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        // Fill the entire width while maintaining aspect ratio
+        heroImage->setPixmap(image.scaled(1400, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        heroImage->setAlignment(Qt::AlignCenter);
     } else {
+        qDebug() << "Image not found at:" << imagePath;
         heroImage->setText("Image not found");
     }
-    heroImage->setMinimumHeight(400);
-    heroImage->setStyleSheet("QLabel { background-color: #f0f0f0; }");
-    heroImage->setAlignment(Qt::AlignCenter);
 
     heroLayout->addWidget(heroImage);
     parentLayout->addWidget(heroWidget);
@@ -407,8 +442,8 @@ void MainShopWindow::setupHeroSection(QVBoxLayout* parentLayout) {
 void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
     QWidget* featuredWidget = new QWidget;
     QVBoxLayout* featuredLayout = new QVBoxLayout(featuredWidget);
-    featuredLayout->setSpacing(20);
-    featuredLayout->setContentsMargins(40, 40, 40, 40);
+    featuredLayout->setSpacing(0);
+    featuredLayout->setContentsMargins(60, 60, 60, 60);
 
     // Title
     QLabel* title = new QLabel("Featured Products");
@@ -416,14 +451,15 @@ void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
         "font-size: 32px;"
         "font-weight: bold;"
         "color: " + darkBlue + ";"
+        "margin-bottom: 30px;"
     );
     title->setAlignment(Qt::AlignCenter);
     featuredLayout->addWidget(title);
 
-    // Tabs container
+    // Tabs container with fixed width to match indicators
     QWidget* tabsWidget = new QWidget;
     QHBoxLayout* tabsLayout = new QHBoxLayout(tabsWidget);
-    tabsLayout->setSpacing(0);
+    tabsLayout->setSpacing(100);  // Add 100px spacing between tabs
     tabsLayout->setContentsMargins(0, 0, 0, 0);
     tabsLayout->setAlignment(Qt::AlignCenter);
 
@@ -431,7 +467,7 @@ void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
     QStringList categories = {"Tech", "Clothing", "Supplies"};
     for (int i = 0; i < categories.size(); ++i) {
         QPushButton* tab = new QPushButton(categories[i]);
-        tab->setFixedWidth(200);
+        tab->setFixedWidth(400);
         tab->setStyleSheet(
             "QPushButton {"
             "    border: none;"
@@ -439,6 +475,7 @@ void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
             "    font-size: 16px;"
             "    color: " + darkBlue + ";"
             "    background: none;"
+            "    text-align: center;"  // Center the text
             "}"
             "QPushButton:hover {"
             "    color: " + sageGreen + ";"
@@ -449,24 +486,23 @@ void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
         tabsLayout->addWidget(tab);
     }
 
-    // Create indicator container
+    // Create indicator container with fixed width
     QWidget* indicatorContainer = new QWidget;
     QHBoxLayout* indicatorLayout = new QHBoxLayout(indicatorContainer);
-    indicatorLayout->setSpacing(0);
+    indicatorLayout->setSpacing(0);  // Remove spacing between indicators
     indicatorLayout->setContentsMargins(0, 0, 0, 0);
     indicatorLayout->setAlignment(Qt::AlignCenter);
 
-    // Create three separate indicator lines
+    // Create indicator lines
     for (int i = 0; i < 3; ++i) {
         QFrame* line = new QFrame;
         line->setFixedHeight(3);
-        line->setFixedWidth(200);
-        line->setStyleSheet("background-color: " + lightGrey + "; margin: 0;");
+        line->setFixedWidth(400);
+        line->setStyleSheet("background-color: " + lightGrey + "; margin: 0; padding: 0;");
         featureIndicators.append(line);
         indicatorLayout->addWidget(line);
     }
 
-    // Add widgets to layout
     QVBoxLayout* tabContainerLayout = new QVBoxLayout;
     tabContainerLayout->addWidget(tabsWidget);
     tabContainerLayout->addWidget(indicatorContainer);
@@ -474,7 +510,6 @@ void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
     tabContainerLayout->setContentsMargins(0, 0, 0, 0);
     featuredLayout->addLayout(tabContainerLayout);
 
-    // Add to parent layout
     parentLayout->addWidget(featuredWidget);
 }
 

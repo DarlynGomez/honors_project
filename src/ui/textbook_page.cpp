@@ -102,6 +102,8 @@ void TextbookPage::setupFilterPanel() {
     codeInput->setStyleSheet(inputStyle);
     searchInput->setStyleSheet(inputStyle);
     
+    departmentCombo->setPlaceholderText("Department");
+    categoryCombo->setPlaceholderText("Course Section");
     lecInput->setPlaceholderText("LEC Code");
     codeInput->setPlaceholderText("Course Code");
     searchInput->setPlaceholderText("Search by Title");
@@ -133,30 +135,36 @@ void TextbookPage::setupFilterPanel() {
 }
 
 QWidget* TextbookPage::createBookCard(const Textbook& book) {
-   QWidget* card = new QWidget;
-   card->setFixedSize(500, 400);
-   card->setStyleSheet(
-            "QWidget {"
-            "background-color: white;"
-            "border: 1px solid #E0E0E0;"
-            "border-radius: 8px;"
-            "outline: none;"
-       "}"
-   );
+    QWidget* card = new QWidget;
+    card->setFixedSize(400, 400);
+    card->setStyleSheet(
+        "QWidget {"
+        "   background-color: white;"
+        "   border: 1px solid #E0E0E0;"
+        "   border-radius: 8px;"
+        "   outline: none;"
+        "}"
+    );
    
-   QVBoxLayout* cardLayout = new QVBoxLayout(card);
-   cardLayout->setSpacing(10);
-   cardLayout->setContentsMargins(15, 15, 15, 15);
+    QVBoxLayout* cardLayout = new QVBoxLayout(card);
+    cardLayout->setSpacing(10);
+    cardLayout->setContentsMargins(15, 15, 15, 15);
    
-   // Book image
-   QLabel* imageLabel = new QLabel(card);
-   QPixmap bookImage(book.getImagePath());
-   if (bookImage.isNull()) {
-       bookImage = QPixmap(":/images/textbooks/default_book.jpg");
-   }
-   imageLabel->setPixmap(bookImage.scaled(200, 250, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-   imageLabel->setAlignment(Qt::AlignCenter);
-   
+    // Book image with fallback to default
+    QLabel* imageLabel = new QLabel(card);
+    QPixmap bookImage(book.getImagePath());
+    if (bookImage.isNull()) {
+        // Use default image from assets
+        QString defaultPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/default_book.jpg";
+        bookImage = QPixmap(defaultPath);
+        if (bookImage.isNull()) {
+            qDebug() << "Failed to load image from:" << book.getImagePath();
+            qDebug() << "And failed to load default image from:" << defaultPath;
+        }
+    }
+    imageLabel->setPixmap(bookImage.scaled(200, 250, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    imageLabel->setAlignment(Qt::AlignCenter);
+
    // Title
    QLabel* titleLabel = new QLabel(book.title);
    titleLabel->setWordWrap(true);

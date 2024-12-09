@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
         fadeOut->start(QAbstractAnimation::DeleteWhenStopped);
     });
   
-   mainWindow.setMinimumSize(1200, 800);  // Minimum size of main window
+   mainWindow.setMinimumSize(1400, 800);  // Minimum size of main window
    mainWindow.resize(1400, 900);          // Initial size of mainwindow
    mainWindow.show(); // Display main window
   

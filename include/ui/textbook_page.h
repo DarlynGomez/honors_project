@@ -5,6 +5,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QCoreApplication>
 #include <QGridLayout>
 #include "database/database_manager.h"
 

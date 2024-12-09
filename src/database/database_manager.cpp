@@ -49,47 +49,50 @@ void DatabaseManager::populateInitialData() {
     query.next();
     if (query.value(0).toInt() > 0) return;
 
-    // Add the sample data
+    // Get the application directory path
+    QString assetPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/";
+
+    // Add the sample data with updated image paths
     QVector<Textbook> initialBooks = {
         Textbook("Computer Science", "1100", "CSC", "101", 
                 "Starting Out with C++ from Control Structures to Objects", 
-                "", "0001", 110.70, ":/images/images/textbooks/cpp_book.jpg"),
+                "", "0001", 110.70, assetPath + "cpp_book.jpg"),
                 
         Textbook("Computer Science", "1500", "CSC", "211H", 
                 "Starting Out with C++ from Control Structures to Objects", 
-                "", "0002", 113.70, ":/images/images/textbooks/cpp_book.jpg"),
+                "", "0002", 113.70, assetPath + "cpp_book.jpg"),
                 
         Textbook("Computer Science", "0901", "CSC", "111", 
                 "Starting Out with C++ from Control Structures to Objects", 
-                "", "0001", 110.70, ":/images/images/textbooks/cpp_book.jpg"),
+                "", "0001", 110.70, assetPath + "cpp_book.jpg"),
                 
         Textbook("Social Sciences, Human Services & Criminal Justice", "A05W", "ECO", "201H",
                 "Exploring Macroeconomics", 
-                "Robert L. L. Sexton", "0003", 70.25, ":/images/images/textbooks/macro_econ.jpg"),
+                "Robert L. L. Sexton", "0003", 70.25, assetPath + "macro_econ.jpg"),
                 
         Textbook("Social Sciences, Human Services & Criminal Justice", "A05W", "ECO", "201",
                 "Exploring Macroeconomics", 
-                "Robert L. L. Sexton", "0004", 70.25, ":/images/images/textbooks/macro_econ.jpg"),
+                "Robert L. L. Sexton", "0004", 70.25, assetPath + "macro_econ.jpg"),
                 
         Textbook("Social Sciences, Human Services & Criminal Justice", "1700", "ENG", "121",
                 "Gilgamesh: A New Translation of the Ancient Epic", 
-                "Sophus Helle", "0005", 5.15, ":/images/images/textbooks//gilgamesh.jpg"),
+                "Sophus Helle", "0005", 5.15, assetPath + "gilgamesh.jpg"),
                 
         Textbook("English", "1700", "ENG", "121", 
                 "Frankenstein", 
-                "Mary Shelley", "0006", 9.00, ":/images/images/textbooks/frankenstein.jpg"),
+                "Mary Shelley", "0006", 9.00, assetPath + "frankenstein.jpg"),
                 
         Textbook("English", "1700", "ENG", "121", 
                 "Never Let Me Go", 
-                "Kazuo Ishiguro", "0007", 9.00, ":/images/images/textbooks/never_let_me_go.jpg"),
+                "Kazuo Ishiguro", "0007", 9.00, assetPath + "never_let_me_go.jpg"),
                 
         Textbook("Science", "1249", "PHY", "215", 
                 "Physics for Scientists and Engineers Volume I", 
-                "Giancoli Douglas", "0008", 62.00, ":/images/images/textbooks/physics.jpg"),
+                "Giancoli Douglas", "0008", 62.00, assetPath + "physics.jpg"),
                 
         Textbook("Mathematics", "1249", "MAT", "302", 
                 "Calculus: Early Transcendental Functions 7th Edition", 
-                "Ron Larson", "0009", 182.24, ":/images/images/textbooks/calculus.jpg")
+                "Ron Larson", "0009", 182.24, assetPath + "calculus.jpg")
     };
 
     for (const auto& book : initialBooks) {
