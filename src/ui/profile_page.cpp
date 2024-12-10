@@ -1,4 +1,5 @@
 #include "ui/profile_page.h"
+#include "ui/mainshop_window.h"
 #include <QScrollArea>
 #include <QGridLayout>
 #include <QFrame>
@@ -532,12 +533,55 @@ void ProfilePage::extractNameFromEmail() {
     }
 }
 
+
+
 void ProfilePage::loadUserProfile() {
-    // Will be implemented when we add database support
+    // Load existing profile data if any
+    QString major = dbManager->getStudentMajor(userEmail);
+    QString semester = dbManager->getStudentSemesterLevel(userEmail);
+    
+    if (!major.isEmpty()) {
+        int majorIndex = majorCombo->findText(major);
+        if (majorIndex >= 0) {
+            majorCombo->setCurrentIndex(majorIndex);
+        }
+    }
+    
+    if (!semester.isEmpty()) {
+        int semesterIndex = semesterCombo->findText(semester);
+        if (semesterIndex >= 0) {
+            semesterCombo->setCurrentIndex(semesterIndex);
+        }
+    }
 }
 
 void ProfilePage::saveMajorAndSemester() {
-    // Will be implemented when we add database support
+    QString selectedMajor = majorCombo->currentText();
+    QString selectedSemester = semesterCombo->currentText();
+    
+    // Update the database with the new profile information
+    if (dbManager->updateStudentProfile(userEmail, selectedMajor, selectedSemester)) {
+        // Show success message
+        QMessageBox::information(this, "Profile Updated",
+            "Your profile has been updated successfully. Your recommended books will be updated accordingly.");
+            
+        // Get parent window (MainShopWindow)
+        QWidget* parent = parentWidget();
+        while (parent && !parent->inherits("MainShopWindow")) {
+            parent = parent->parentWidget();
+        }
+        
+        // If we found MainShopWindow, update the TextbookPage
+        if (parent) {
+            if (auto* mainWindow = qobject_cast<MainShopWindow*>(parent)) {
+                // This will trigger a refresh of the recommendations
+                mainWindow->refreshTextbookPage();
+            }
+        }
+    } else {
+        QMessageBox::warning(this, "Error",
+            "Failed to update profile. Please try again.");
+    }
 }
 
 void ProfilePage::handleCreateListing() {

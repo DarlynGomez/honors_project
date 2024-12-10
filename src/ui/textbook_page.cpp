@@ -1,59 +1,123 @@
 #include "ui/textbook_page.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QLabel>
-#include <QScrollArea>
 #include <QGraphicsDropShadowEffect>
 #include <QMessageBox>
 
 TextbookPage::TextbookPage(DatabaseManager* db, QWidget *parent)
-    : QWidget(parent), dbManager(db), currentPage(1)
+    : QWidget(parent)
+    , dbManager(db)
+    , currentPage(1)
+    , booksGrid(nullptr)
+    , recommendedLayout(nullptr)
+    , filterPanel(nullptr)
 {
     setupUI();
     loadDepartments();
     loadCategories();
-    handleFilter(); // Load initial books
 }
 
 void TextbookPage::setupUI() {
+    // Main layout
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    
+    // Create tab widget
+    mainTabWidget = new QTabWidget(this);
+    mainTabWidget->setStyleSheet(
+        "QTabWidget::pane {"
+        "    border: none;"
+        "}"
+        "QTabBar::tab {"
+        "    padding: 12px 20px;"
+        "    margin-right: 5px;"
+        "    background-color: white;"
+        "    border: 2px solid " + sageGreen + ";"
+        "    border-radius: 8px;"
+        "    color: " + darkBlue + ";"
+        "    font-weight: bold;"
+        "}"
+        "QTabBar::tab:selected {"
+        "    background-color: " + sageGreen + ";"
+        "    color: white;"
+        "}"
+        "QTabBar::tab:hover {"
+        "    background-color: " + lightSage + ";"
+        "}"
+    );
+
+    // Initialize all grids and layouts first
+    booksGrid = new QGridLayout;
+    recommendedLayout = new QVBoxLayout;
+
+    // Create and add tabs
+    QWidget* allBooksWidget = new QWidget;
+    QVBoxLayout* allBooksLayout = new QVBoxLayout(allBooksWidget);
+    setupFilterPanel();
+    allBooksLayout->addWidget(filterPanel);
+    
+    QScrollArea* gridScrollArea = new QScrollArea;
+    QWidget* gridContainer = new QWidget;
+    booksGrid->setSpacing(20);
+    gridContainer->setLayout(booksGrid);
+    gridScrollArea->setWidget(gridContainer);
+    gridScrollArea->setWidgetResizable(true);
+    gridScrollArea->setFrameShape(QFrame::NoFrame);
+    allBooksLayout->addWidget(gridScrollArea);
+    
+    QWidget* recommendedWidget = createRecommendedTab();
+    
+    mainTabWidget->addTab(allBooksWidget, "All Books");
+    mainTabWidget->addTab(recommendedWidget, "Recommended");
+    
+    mainLayout->addWidget(mainTabWidget);
+    
+    // Load initial books
+    handleFilter();
+}
+
+QWidget* TextbookPage::createAllBooksTab() {
+    QWidget* tab = new QWidget;
+    QVBoxLayout* layout = new QVBoxLayout(tab);
     
     // Title
-    QLabel* title = new QLabel("Textbooks", this);
+    QLabel* title = new QLabel("Textbooks", tab);
     title->setStyleSheet(
         "font-size: 24px;"
         "font-weight: bold;"
-        "color: #2C3E50;"
+        "color: " + darkBlue + ";"
         "margin-bottom: 20px;"
     );
-    mainLayout->addWidget(title);
+    layout->addWidget(title);
     
+    // Add filter panel
     setupFilterPanel();
+    layout->addWidget(filterPanel);
     
-    // Books grid
-    QScrollArea* scrollArea = new QScrollArea(this);
+    // Books grid container
+    QScrollArea* scrollArea = new QScrollArea(tab);
     QWidget* scrollContent = new QWidget;
     booksGrid = new QGridLayout(scrollContent);
     booksGrid->setSpacing(20);
     scrollArea->setWidget(scrollContent);
     scrollArea->setWidgetResizable(true);
-    mainLayout->addWidget(scrollArea);
+    layout->addWidget(scrollArea);
     
     // Pagination
     QHBoxLayout* paginationLayout = new QHBoxLayout;
-    prevButton = new QPushButton("Previous", this);
-    nextButton = new QPushButton("Next", this);
+    prevButton = new QPushButton("Previous", tab);
+    nextButton = new QPushButton("Next", tab);
     
     QString buttonStyle = 
         "QPushButton {"
-        "    background-color: #9CAF88;"
+        "    background-color: " + sageGreen + ";"
         "    color: white;"
         "    padding: 8px 15px;"
         "    border-radius: 4px;"
         "    border: none;"
         "}"
         "QPushButton:hover {"
-        "    background-color: #2C3E50;"
+        "    background-color: " + darkBlue + ";"
         "}"
         "QPushButton:disabled {"
         "    background-color: #CCCCCC;"
@@ -67,14 +131,215 @@ void TextbookPage::setupUI() {
     paginationLayout->addWidget(nextButton);
     paginationLayout->addStretch();
     
-    mainLayout->addLayout(paginationLayout);
+    layout->addLayout(paginationLayout);
     
-    connect(prevButton, &QPushButton::clicked, this, &TextbookPage::handlePrevPage);
-    connect(nextButton, &QPushButton::clicked, this, &TextbookPage::handleNextPage);
+    return tab;
+}
+
+QWidget* TextbookPage::createRecommendedTab() {
+    QWidget* tab = new QWidget;
+    QVBoxLayout* layout = new QVBoxLayout(tab);
+    layout->setSpacing(20);
+    layout->setContentsMargins(40, 40, 40, 40);
+    
+    // Header section
+    QLabel* title = new QLabel("Recommended Books", tab);
+    title->setStyleSheet(
+        "font-size: 24px;"
+        "font-weight: bold;"
+        "color: " + darkBlue + ";"
+    );
+    
+    QLabel* subtitle = new QLabel(
+        "Based on your major and semester level", tab);
+    subtitle->setStyleSheet(
+        "font-size: 16px;"
+        "color: #666;"
+        "margin-bottom: 20px;"
+    );
+    
+    layout->addWidget(title);
+    layout->addWidget(subtitle);
+    
+    // Scrollable area for recommended books
+    QScrollArea* scrollArea = new QScrollArea;
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setStyleSheet(
+        "QScrollArea {"
+        "    border: none;"
+        "}"
+        "QScrollBar:vertical {"
+        "    border: none;"
+        "    background: #F0F0F0;"
+        "    width: 8px;"
+        "    margin: 0px;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "    background: " + sageGreen + ";"
+        "    border-radius: 4px;"
+        "}"
+    );
+    
+    // Container for book list
+    QWidget* listContainer = new QWidget;
+    recommendedLayout = new QVBoxLayout(listContainer);
+    recommendedLayout->setSpacing(15);
+    recommendedLayout->setContentsMargins(0, 0, 0, 0);
+    
+    scrollArea->setWidget(listContainer);
+    layout->addWidget(scrollArea);
+    
+    return tab;
+}
+
+QWidget* TextbookPage::createRecommendedBookItem(const Textbook& book) {
+    QWidget* item = new QWidget;
+    item->setStyleSheet(
+        "QWidget {"
+        "    background-color: white;"
+        "    border: 1px solid #E0E0E0;"
+        "    border-radius: 10px;"
+        "    padding: 15px;"
+        "}"
+        "QWidget:hover {"
+        "    background-color: " + lightSage + ";"
+        "}"
+    );
+    
+    QHBoxLayout* layout = new QHBoxLayout(item);
+    layout->setSpacing(20);
+    
+    // Book image
+    QLabel* imageLabel = new QLabel;
+    QPixmap image(book.getImagePath());
+    if (!image.isNull()) {
+        imageLabel->setPixmap(image.scaled(80, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else {
+        imageLabel->setText("No Image");
+        imageLabel->setStyleSheet("background: " + lightSage + "; padding: 10px; border-radius: 5px;");
+    }
+    imageLabel->setFixedSize(80, 100);
+    
+    // Book information
+    QWidget* infoWidget = new QWidget;
+    QVBoxLayout* infoLayout = new QVBoxLayout(infoWidget);
+    infoLayout->setSpacing(5);
+    
+    QLabel* titleLabel = new QLabel(book.title);
+    titleLabel->setStyleSheet(
+        "font-weight: bold;"
+        "font-size: 16px;"
+        "color: " + darkBlue + ";"
+    );
+    titleLabel->setWordWrap(true);
+    
+    QLabel* courseLabel = new QLabel(
+        QString("%1 %2 (LEC: %3)")
+            .arg(book.courseCategory)
+            .arg(book.courseCode)
+            .arg(book.lec)
+    );
+    courseLabel->setStyleSheet("color: #666;");
+    
+    QLabel* priceLabel = new QLabel(QString("$%1").arg(book.price, 0, 'f', 2));
+    priceLabel->setStyleSheet(
+        "color: " + sageGreen + ";"
+        "font-size: 16px;"
+        "font-weight: bold;"
+    );
+    
+    infoLayout->addWidget(titleLabel);
+    infoLayout->addWidget(courseLabel);
+    infoLayout->addWidget(priceLabel);
+    infoLayout->addStretch();
+    
+    // Add to cart button
+    QPushButton* cartButton = new QPushButton("Add to Cart");
+    cartButton->setStyleSheet(
+        "QPushButton {"
+        "    background-color: " + sageGreen + ";"
+        "    color: white;"
+        "    padding: 8px 15px;"
+        "    border-radius: 15px;"
+        "    border: none;"
+        "}"
+        "QPushButton:hover {"
+        "    background-color: " + darkBlue + ";"
+        "}"
+    );
+    cartButton->setFixedWidth(120);
+    
+    connect(cartButton, &QPushButton::clicked, [=]() {
+        dbManager->addToCart(currentUserEmail, book.productId, 1);
+        QMessageBox::information(this, "Success", "Added to cart!");
+    });
+    
+    // Layout assembly
+    layout->addWidget(imageLabel);
+    layout->addWidget(infoWidget, 1);
+    layout->addWidget(cartButton);
+    
+    // Add shadow effect
+    QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect;
+    shadow->setBlurRadius(10);
+    shadow->setColor(QColor(0, 0, 0, 30));
+    shadow->setOffset(0, 2);
+    item->setGraphicsEffect(shadow);
+    
+    return item;
+}
+
+void TextbookPage::handleTabChange(int index) {
+    if (index == 1) { // Recommended tab
+        updateRecommendedBooks();
+    }
+}
+
+
+void TextbookPage::updateRecommendedBooks() {
+    // Clear existing items
+    QLayoutItem* item;
+    while ((item = recommendedLayout->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
+    
+    // Get recommended books
+    QVector<Textbook> recommendations = dbManager->getRecommendedBooks(currentUserEmail);
+    
+    if (recommendations.isEmpty()) {
+        QLabel* placeholder = new QLabel(
+            "No recommendations available.\nPlease update your major and semester level in your profile.");
+        placeholder->setStyleSheet(
+            "color: #666;"
+            "font-size: 16px;"
+            "padding: 40px;"
+        );
+        placeholder->setAlignment(Qt::AlignCenter);
+        recommendedLayout->addWidget(placeholder);
+        return;
+    }
+    
+    // Add each recommended book as a list item
+    for (const auto& book : recommendations) {
+        recommendedLayout->addWidget(createRecommendedBookItem(book));
+    }
+    
+    // Add stretch at the end to keep items at the top
+    recommendedLayout->addStretch();
+}
+
+
+void TextbookPage::refreshRecommendations() {
+    if (!recommendedLayout) {
+        return;  // Guard against null layout
+    }
+    updateRecommendedBooks();
 }
 
 void TextbookPage::setupFilterPanel() {
-    QWidget* filterPanel = new QWidget(this);
+    filterPanel = new QWidget(this);
     QHBoxLayout* filterLayout = new QHBoxLayout(filterPanel);
     
     QString inputStyle = 
@@ -112,14 +377,14 @@ void TextbookPage::setupFilterPanel() {
     QPushButton* filterButton = new QPushButton("Apply Filter", this);
     filterButton->setStyleSheet(
         "QPushButton {"
-        "    background-color: #9CAF88;"
+        "    background-color: " + sageGreen + ";"
         "    color: white;"
         "    padding: 8px 15px;"
         "    border-radius: 4px;"
         "    border: none;"
         "}"
         "QPushButton:hover {"
-        "    background-color: #2C3E50;"
+        "    background-color: " + darkBlue + ";"
         "}"
     );
     
@@ -129,8 +394,6 @@ void TextbookPage::setupFilterPanel() {
     filterLayout->addWidget(codeInput);
     filterLayout->addWidget(searchInput);
     filterLayout->addWidget(filterButton);
-    
-    layout()->addWidget(filterPanel);
     
     connect(filterButton, &QPushButton::clicked, this, &TextbookPage::handleFilter);
 }
@@ -246,20 +509,33 @@ QWidget* TextbookPage::createBookCard(const Textbook& book) {
 
 void TextbookPage::setUserEmail(const QString& email) {
     currentUserEmail = email;
+    refreshRecommendations();
 }
 
-void TextbookPage::displayBooks(const QVector<Textbook>& books) {
+void TextbookPage::displayBooks(const QVector<Textbook>& books, QGridLayout* targetGrid) {
     // Clear existing items
     QLayoutItem* item;
-    while ((item = booksGrid->takeAt(0)) != nullptr) {
+    while ((item = targetGrid->takeAt(0)) != nullptr) {
         delete item->widget();
         delete item;
+    }
+    
+    if (books.isEmpty()) {
+        QLabel* placeholder = new QLabel("No books found matching your criteria.");
+        placeholder->setStyleSheet(
+            "color: #666;"
+            "font-size: 16px;"
+            "padding: 40px;"
+        );
+        placeholder->setAlignment(Qt::AlignCenter);
+        targetGrid->addWidget(placeholder, 0, 0);
+        return;
     }
     
     // Add new books
     int row = 0, col = 0;
     for (const auto& book : books) {
-        booksGrid->addWidget(createBookCard(book), row, col);
+        targetGrid->addWidget(createBookCard(book), row, col);
         col++;
         if (col >= 3) {  // 3 books per row
             col = 0;
@@ -268,12 +544,18 @@ void TextbookPage::displayBooks(const QVector<Textbook>& books) {
     }
     
     // Update pagination buttons
-    prevButton->setEnabled(currentPage > 1);
-    nextButton->setEnabled(books.size() == 9);  // Disable if less than full page
+    if (targetGrid == booksGrid) {
+        prevButton->setEnabled(currentPage > 1);
+        nextButton->setEnabled(books.size() == 9);  // Disable if less than full page
+    }
 }
 
 void TextbookPage::handleFilter() {
-    currentPage = 1;  // Reset to first page when filtering
+    if (!booksGrid) {
+        return;  // Guard against null grid
+    }
+
+    currentPage = 1;
     
     QVector<Textbook> books = dbManager->getTextbooks(
         departmentCombo->currentText(),
@@ -282,10 +564,26 @@ void TextbookPage::handleFilter() {
         codeInput->text(),
         searchInput->text(),
         currentPage,
-        9  // Items per page
+        9
     );
     
-    displayBooks(books);
+    // Clear existing items
+    QLayoutItem* item;
+    while ((item = booksGrid->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
+    
+    // Add books to grid
+    int row = 0, col = 0;
+    for (const auto& book : books) {
+        booksGrid->addWidget(createBookCard(book), row, col);
+        col++;
+        if (col >= 3) {
+            col = 0;
+            row++;
+        }
+    }
 }
 
 void TextbookPage::handleNextPage() {

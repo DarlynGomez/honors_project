@@ -32,6 +32,7 @@ public:
     // Accesses my user information
     void setUserEmail(const QString& email);
     // Makes my user email accessible
+    void refreshTextbookPage();
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

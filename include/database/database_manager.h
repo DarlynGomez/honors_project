@@ -29,7 +29,6 @@ public:
     bool updateCartQuantity(const QString& userEmail, const QString& productId, int quantity);
     bool removeFromCart(const QString& userEmail, const QString& productId);
     QVector<QPair<Textbook, int>> getCart(const QString& userEmail);
-
     bool initializeDatabase();
     bool addTextbook(const Textbook& textbook);
     QVector<Textbook> getTextbooks(
@@ -41,11 +40,19 @@ public:
         int page = 1,
         int itemsPerPage = 9
     );
+
+    // For student profiles and recommendations
+    bool updateStudentProfile(const QString& email, const QString& major, const QString& semesterLevel);
+    QString getStudentMajor(const QString& email);
+    QString getStudentSemesterLevel(const QString& email);
+    QVector<Textbook> getRecommendedBooks(const QString& email);
     
 private:
     QSqlDatabase db;
     void createTables();
     void populateInitialData();
+    void createRecommendationTables();
+    void populateRecommendationData();
 };
 
 #endif

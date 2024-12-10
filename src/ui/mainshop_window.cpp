@@ -482,6 +482,16 @@ QWidget* MainShopWindow::createCategoryWidget(const QString& category) {
     return widget;
 }
 
+void MainShopWindow::refreshTextbookPage() {
+    // Find and refresh the TextbookPage
+    for (int i = 0; i < contentStack->count(); ++i) {
+        TextbookPage* textbookPage = qobject_cast<TextbookPage*>(contentStack->widget(i));
+        if (textbookPage) {
+            textbookPage->refreshRecommendations();
+            break;
+        }
+    }
+}
 
 
 void MainShopWindow::setupHeroSection(QVBoxLayout* parentLayout) {
