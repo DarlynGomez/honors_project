@@ -263,7 +263,7 @@ QWidget* CartPage::createCartItem(const Textbook& book, int quantity) {
     layout->addLayout(infoLayout, 1);
     layout->addLayout(controlsLayout);
 
-    connect(quantityBox, QOverload<int>::of(&QSpinBox::valueChanged), 
+    connect(quantityBox, QOverload<int>::of(&QSpinBox::valueChanged),
             [=](int value) { handleQuantityChange(book.productId, value); });
     connect(removeButton, &QPushButton::clicked, 
             [=]() { handleRemoveItem(book.productId); });
@@ -326,9 +326,41 @@ void CartPage::updateItemCount() {
         .arg(itemCount == 1 ? "" : "s"));
 }
 
-void CartPage::handleQuantityChange(const QString& productId, int quantity) {
-    dbManager->updateCartQuantity(currentUserEmail, productId, quantity);
-    refreshCart();
+void CartPage::updateQuantity(const QString& productId, int newQuantity) {
+    // Prevent negative quantities
+    if (newQuantity <= 0) {
+        newQuantity = 1;  // Minimum quantity is 1
+    }
+    
+    // Set maximum quantity (optional)
+    const int MAX_QUANTITY = 99;
+    if (newQuantity > MAX_QUANTITY) {
+        newQuantity = MAX_QUANTITY;
+    }
+    
+    // Update database
+    if (dbManager->updateCartQuantity(currentUserEmail, productId, newQuantity)) {
+        refreshCart();  // Refresh the display
+    }
+}
+
+void CartPage::calculateTotal() {
+    total = 0.0;
+    QVector<QPair<Textbook, int>> cartItems = dbManager->getCart(currentUserEmail);
+    
+    for (const auto& item : cartItems) {
+        total += item.first.price * item.second;
+    }
+    
+    // Update total display
+    if (totalLabel) {
+        totalLabel->setText(QString("Total: $%1").arg(total, 0, 'f', 2));
+    }
+}
+
+void CartPage::handleQuantityChange(const QString& productId, int value) {
+    updateQuantity(productId, value);
+    calculateTotal(); // Update total
 }
 
 void CartPage::handleRemoveItem(const QString& productId) {

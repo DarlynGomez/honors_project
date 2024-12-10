@@ -19,12 +19,15 @@ public:
 
 signals:
     void checkoutCompleted();
+    void continueShoppingClicked(); 
 
 private slots:
     void handleCheckout();
-    void handleQuantityChange(const QString& productId, int quantity);
+    void handleQuantityChange(const QString& productId, int value);
+    void updateQuantity(const QString& productId, int newQuantity);
     void handleRemoveItem(const QString& productId);
     void handleContinueShopping();
+    void calculateTotal();
 
 private:
     DatabaseManager* dbManager;
@@ -34,6 +37,7 @@ private:
     QLabel* itemCountLabel;
     double cartTotal;
     int itemCount;
+    double total;
 
     void setupUI();
     QWidget* createCartItem(const Textbook& book, int quantity);
