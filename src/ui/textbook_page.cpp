@@ -298,6 +298,8 @@ void TextbookPage::handleTabChange(int index) {
 
 
 void TextbookPage::updateRecommendedBooks() {
+    qDebug() << "Updating recommendations for user:" << currentUserEmail;
+    
     // Clear existing items
     QLayoutItem* item;
     while ((item = recommendedLayout->takeAt(0)) != nullptr) {
@@ -307,6 +309,8 @@ void TextbookPage::updateRecommendedBooks() {
     
     // Get recommended books
     QVector<Textbook> recommendations = dbManager->getRecommendedBooks(currentUserEmail);
+    
+    qDebug() << "Received" << recommendations.size() << "recommendations";
     
     if (recommendations.isEmpty()) {
         QLabel* placeholder = new QLabel(
@@ -318,15 +322,16 @@ void TextbookPage::updateRecommendedBooks() {
         );
         placeholder->setAlignment(Qt::AlignCenter);
         recommendedLayout->addWidget(placeholder);
+        qDebug() << "Added placeholder for empty recommendations";
         return;
     }
     
     // Add each recommended book as a list item
     for (const auto& book : recommendations) {
         recommendedLayout->addWidget(createRecommendedBookItem(book));
+        qDebug() << "Added recommendation:" << book.title;
     }
     
-    // Add stretch at the end to keep items at the top
     recommendedLayout->addStretch();
 }
 

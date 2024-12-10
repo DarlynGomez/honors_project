@@ -209,48 +209,66 @@ void DatabaseManager::populateRecommendationData() {
     QSqlQuery query;
     query.exec("SELECT COUNT(*) FROM semester_requirements");
     query.next();
-    if (query.value(0).toInt() > 0) return;
-
+    
+    // Always repopulate for testing
+    query.exec("DELETE FROM semester_requirements");
+    
+    qDebug() << "Populating recommendation data...";
+    
     // Computer Science - Lower Freshman Requirements
-    QVector<QPair<QString, QString>> csLowerFreshmanCourses = {
-        // Core CS Course
-        {"CSC", "101"},  // Principles of IT and Computing
-        
-        // General Education
-        {"ENG", "121"},  // English Composition
+    struct CourseRequirement {
+        QString category;
+        QString code;
+    };
+    
+    QVector<CourseRequirement> csLowerFreshmanCourses = {
+        {"CSC", "101"},  // Core CS course
+        {"ENG", "121"}   // English requirement
     };
 
     // Add requirements
     for (const auto& course : csLowerFreshmanCourses) {
-        query.prepare(
+        QSqlQuery insertQuery;
+        insertQuery.prepare(
             "INSERT INTO semester_requirements (major, semester_level, course_category, course_code) "
             "VALUES (?, ?, ?, ?)"
         );
-        query.addBindValue("Computer Science");
-        query.addBindValue("Lower Freshman");
-        query.addBindValue(course.first);   // Course category (e.g., CSC, ENG)
-        query.addBindValue(course.second);  // Course code (e.g., 101, 121)
-        query.exec();
+        insertQuery.addBindValue("Computer Science");
+        insertQuery.addBindValue("Lower Freshman");
+        insertQuery.addBindValue(course.category);
+        insertQuery.addBindValue(course.code);
+        
+        if (!insertQuery.exec()) {
+            qDebug() << "Failed to insert requirement:" << insertQuery.lastError().text();
+        } else {
+            qDebug() << "Added requirement:" << course.category << course.code;
+        }
     }
 }
 
+
 bool DatabaseManager::updateStudentProfile(const QString& email, const QString& major, const QString& semesterLevel) {
+    qDebug() << "Updating profile for:" << email 
+             << "Major:" << major 
+             << "Semester:" << semesterLevel;
+             
     QSqlQuery query;
     query.prepare(
         "INSERT OR REPLACE INTO student_profiles (email, major, semester_level) "
-        "VALUES (:email, :major, :semester_level)"
+        "VALUES (?, ?, ?)"
     );
+    query.addBindValue(email);
+    query.addBindValue(major);
+    query.addBindValue(semesterLevel);
     
-    query.bindValue(":email", email);
-    query.bindValue(":major", major);
-    query.bindValue(":semester_level", semesterLevel);
-    
-    if (!query.exec()) {
-        qDebug() << "Failed to update student profile:" << query.lastError().text();
-        return false;
+    bool success = query.exec();
+    if (!success) {
+        qDebug() << "Profile update failed:" << query.lastError().text();
+    } else {
+        qDebug() << "Profile updated successfully";
     }
     
-    return true;
+    return success;
 }
 
 QString DatabaseManager::getStudentMajor(const QString& email) {
@@ -280,43 +298,113 @@ QString DatabaseManager::getStudentSemesterLevel(const QString& email) {
 QVector<Textbook> DatabaseManager::getRecommendedBooks(const QString& email) {
     QVector<Textbook> recommendations;
     
+    qDebug() << "Getting recommendations for:" << email;
+    
+    // Define the asset path (adjust as needed)
+    QString assetPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/";
+
     // Get student's major and semester level
     QString major = getStudentMajor(email);
-    QString semesterLevel = getStudentSemesterLevel(email);
+    QString semester = getStudentSemesterLevel(email);
     
-    if (major.isEmpty() || semesterLevel.isEmpty()) {
+    qDebug() << "Student profile - Major:" << major << "Semester:" << semester;
+    
+    if (major.isEmpty() || semester.isEmpty()) {
+        qDebug() << "Missing profile information";
         return recommendations;
     }
 
     QSqlQuery query;
     query.prepare(
         "SELECT DISTINCT t.* FROM textbooks t "
-        "JOIN semester_requirements r ON t.course_category = r.course_category "
-        "AND t.course_code = r.course_code "
-        "WHERE r.major = ? AND r.semester_level = ? "
-        "ORDER BY t.course_category, t.title"
+        "JOIN semester_requirements r ON "
+        "t.course_category = r.course_category AND t.course_code = r.course_code "
+        "WHERE r.major = ? AND r.semester_level = ?"
     );
     query.addBindValue(major);
-    query.addBindValue(semesterLevel);
+    query.addBindValue(semester);
     
-    if (query.exec()) {
-        while (query.next()) {
-            recommendations.append(Textbook(
-                query.value("department").toString(),
-                query.value("lec").toString(),
-                query.value("course_category").toString(),
-                query.value("course_code").toString(),
-                query.value("title").toString(),
-                query.value("author").toString(),
-                query.value("product_id").toString(),
-                query.value("price").toDouble(),
-                query.value("image_path").toString()
-            ));
-        }
+    if (!query.exec()) {
+        qDebug() << "Failed to execute recommendations query:" << query.lastError().text();
+        return recommendations;
     }
     
+    // Debug print all textbooks that match
+    while (query.next()) {
+        qDebug() << "Found matching book:" 
+                 << query.value("title").toString()
+                 << "for course" 
+                 << query.value("course_category").toString()
+                 << query.value("course_code").toString();
+                 
+        recommendations.append(Textbook(
+            query.value("department").toString(),
+            query.value("lec").toString(),
+            query.value("course_category").toString(),
+            query.value("course_code").toString(),
+            query.value("title").toString(),
+            query.value("author").toString(),
+            query.value("product_id").toString(),
+            query.value("price").toDouble(),
+            query.value("image_path").toString()
+        ));
+    }
+    
+    qDebug() << "Total recommendations found:" << recommendations.size();
+    // If no books are found, add default books
+    if (recommendations.isEmpty()) {
+        // Adding default recommended books when recommendations are empty
+        recommendations.append(Textbook(
+            "CSC",                          // dept (Department)
+            "101",                          // lecCode (Lecture Code)
+            "CSC",                          // courseCategory (Course Category)
+            "101",                          // courseCode (Course Code)
+            "Starting Out with C++ from Control Structures to Objects", // title
+            "Tony Gaddis",                  // author
+            "1",                            // productId
+            110.70,                         // price
+            assetPath + "cpp_book.jpg"      // imagePath
+        ));
+
+        recommendations.append(Textbook(
+            "ENG",                          // dept (Department)
+            "121",                          // lecCode (Lecture Code)
+            "ENG",                          // courseCategory (Course Category)
+            "121",                          // courseCode (Course Code)
+            "The Epic of Gilgamesh",         // title
+            "Anonymous",                    // author
+            "1",                            // productId
+            5.99,                          // price
+            assetPath + "gilgamesh.jpg" // imagePath
+        ));
+
+        recommendations.append(Textbook(
+            "ENG",                          // dept (Department)
+            "121",                          // lecCode (Lecture Code)
+            "ENG",                          // courseCategory (Course Category)
+            "121",                          // courseCode (Course Code)
+            "Frankenstein",                  // title
+            "Mary Shelley",                  // author
+            "2",                             // productId
+            9.50,                           // price
+            assetPath + "frankenstein.jpg" // imagePath
+        ));
+
+        recommendations.append(Textbook(
+            "ENG",                          // dept (Department)
+            "121",                          // lecCode (Lecture Code)
+            "ENG",                          // courseCategory (Course Category)
+            "121",                          // courseCode (Course Code)
+            "Enverlet Me Go",               // title
+            "Jane Doe",                     // author
+            "3",                             // productId
+            7.75,                           // price
+            assetPath + "never_let_me_go.jpg" // imagePath
+        ));
+    }
     return recommendations;
 }
+
 
 
 
