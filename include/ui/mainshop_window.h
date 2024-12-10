@@ -22,6 +22,7 @@
 class QHBoxLayout; 
 class QVBoxLayout;
 class TextbookPage;
+class CartPage;
 
 class MainShopWindow : public QMainWindow {
     Q_OBJECT    // How I make my slots and signal connections
@@ -42,7 +43,6 @@ private slots:
     void showElectronics();
     void showSchoolSupplies();
     void showClothing();
-    void showCart();
     void showWishlist();
     void handleLogout();
     void handleFeaturedTabChange(int index);
@@ -61,6 +61,10 @@ private:
 
     // Profile Components
     ProfilePage* profilePage;
+
+    // Cart Page
+    CartPage* cartPage; 
+    void showCart(); 
 
     // Core components
     Authenticator* authenticator;   // Manages my user authentication

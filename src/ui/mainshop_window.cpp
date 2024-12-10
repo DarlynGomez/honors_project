@@ -1,4 +1,5 @@
 #include "../include/ui/mainshop_window.h"
+#include "ui/cart_page.h"
 #include "ui/textbook_page.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -230,6 +231,7 @@ void MainShopWindow::setupNavBar() {
     setupProfileMenu();
 
     // Connect signals
+    connect(cartButton, &QPushButton::clicked, this, &MainShopWindow::showCart);
     connect(profileButton, &QPushButton::clicked, this, &MainShopWindow::toggleProfileMenu);
     connect(searchBar, &QLineEdit::returnPressed, this, &MainShopWindow::handleSearch);
 }
@@ -651,7 +653,43 @@ void MainShopWindow::showClothing() {
 }
 
 void MainShopWindow::showCart() {
-    // Implement cart view
+    if (!cartPage) {
+        cartPage = new CartPage(dbManager, currentUserEmail, this);
+        contentStack->addWidget(cartPage);
+    }
+    
+    cartPage->setUserEmail(currentUserEmail);
+    cartPage->refreshCart();
+    
+    homepageStack->hide();
+    contentStack->show();
+
+    // Fade transition to cart page
+    QWidget* currentWidget = contentStack->currentWidget();
+    cartPage->setWindowOpacity(0.0);
+    contentStack->setCurrentWidget(cartPage);
+
+    // Fade out current widget
+    QPropertyAnimation* fadeOut = new QPropertyAnimation(currentWidget, "windowOpacity");
+    fadeOut->setDuration(200);
+    fadeOut->setStartValue(1.0);
+    fadeOut->setEndValue(0.0);
+    
+    // Fade in cart page
+    QPropertyAnimation* fadeIn = new QPropertyAnimation(cartPage, "windowOpacity");
+    fadeIn->setDuration(200);
+    fadeIn->setStartValue(0.0);
+    fadeIn->setEndValue(1.0);
+
+    // Connect cart signals
+    connect(cartPage, &CartPage::checkoutCompleted, [this]() {
+        // Return to homepage after successful checkout
+        cartPage->refreshCart();
+        showHomepage();
+    });
+
+    fadeOut->start(QAbstractAnimation::DeleteWhenStopped);
+    fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void MainShopWindow::showWishlist() {

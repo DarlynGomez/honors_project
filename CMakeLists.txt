@@ -28,6 +28,7 @@ set(SOURCES
     src/ui/mainshop_window.cpp
     src/ui/profile_menu.cpp
     src/ui/textbook_page.cpp
+    src/ui/cart_page.cpp
     src/database/database_manager.cpp
     src/database/textbook.cpp
     src/ui/profile_page.cpp 
@@ -43,9 +44,11 @@ set(HEADERS
     include/ui/mainshop_window.h
     include/ui/profile_menu.h
     include/ui/textbook_page.h
+    include/ui/cart_page.h
     include/database/database_manager.h
     include/database/textbook.h
     include/ui/profile_page.h
+    
 )
 
 # Create executable
