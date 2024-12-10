@@ -8,6 +8,7 @@
 #include <QStackedWidget> // Switchign between widgets or pages
 #include <QLabel> // Displays static, dynamic text, or images
 #include <QEvent>    // For QMouseEvent
+#include <QMouseEvent>
 #include <QApplication>   // Add this for qApp
 #include "../auth/authenticator.h"
 #include "database/database_manager.h"

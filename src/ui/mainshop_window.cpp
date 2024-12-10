@@ -93,53 +93,6 @@ void MainShopWindow::setupUI() {
     contentStack->hide();
 }
 
-// // Setting up my pre navigation bar
-// void MainShopWindow::setUpPreNavBar() {
-//     preNavBar = new QToolBar();
-//     preNavBar->setFixedHeight(40);
-//     preNavBar->setStyleSheet(
-//         "QToolBar {"
-//         "    background-color: " + sageGreen + ";"
-//         "    padding: 0;"
-//         "    margin: 0;"
-//         "    position: absolute;"
-//         "    top: 0;"
-//         "    left: 0;"
-//         "    right: 0;"
-//         "}"
-//     );
-
-//     QWidget* container = new QWidget();
-//     QHBoxLayout* layout = new QHBoxLayout(container);
-//     layout->setContentsMargins(0, 0, 20, 0);
-//     layout->setAlignment(Qt::AlignRight);
-
-//     // Add buttons with style
-//     QString buttonStyle = 
-//         "QPushButton {"
-//         "    width: 30px;"
-//         "    height: 30px;"
-//         "    border: none;"
-//         "    padding: 5px;"
-//         "    background-color: transparent;"
-//         "}"
-//         "QPushButton:hover {"
-//         "    background-color: rgba(255, 255, 255, 0.2);"
-//         "    border-radius: 15px;"
-//         "}";
-
-//     profileButton = createPreNavButton(":/Images/profileIcon.png", buttonStyle);
-//     wishlistButton2 = createPreNavButton(":/Images/wishlistIcon.png", buttonStyle);
-//     cartButton2 = createPreNavButton(":/Images/cartIcon.png", buttonStyle);
-
-//     layout->addWidget(profileButton);
-//     layout->addWidget(wishlistButton2);
-//     layout->addWidget(cartButton2);
-    
-//     preNavBar->addWidget(container);
-//     addToolBar(Qt::TopToolBarArea, preNavBar);
-// }
-
 QPushButton* MainShopWindow::createPreNavButton(const QString& iconPath, const QString& style) {
    QPushButton* button = new QPushButton;
    button->setIcon(QIcon(iconPath));
@@ -167,6 +120,7 @@ void MainShopWindow::setupNavBar() {
         "color: " + darkBlue + ";"
         "font-family: -apple-system, BlinkMacSystemFont;"
         "margin-right: 20px;"
+        "background: transparent;"
     );
     logo->setCursor(Qt::PointingHandCursor);
     logo->installEventFilter(this);
@@ -195,11 +149,17 @@ void MainShopWindow::setupNavBar() {
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     navBar->addWidget(spacer);
 
-    // Cart Button with Icon
+    // Create container for icons
+    QWidget* iconContainer = new QWidget;
+    QHBoxLayout* iconLayout = new QHBoxLayout(iconContainer);
+    iconLayout->setSpacing(20);  // Even spacing between icons
+    iconLayout->setContentsMargins(0, 0, 20, 0);  // Right margin before user section
+
+    // Cart Button
     cartButton = new QPushButton(this);
     QString cartIconPath = QCoreApplication::applicationDirPath() + "/../assets/images/nav/cartIcon.png";
     cartButton->setIcon(QIcon(cartIconPath));
-    cartButton->setIconSize(QSize(24, 24));  // Adjust icon size as needed
+    cartButton->setIconSize(QSize(24, 24));
     cartButton->setStyleSheet(
         "QPushButton {"
         "    border: none;"
@@ -212,11 +172,11 @@ void MainShopWindow::setupNavBar() {
         "}"
     );
 
-    // Wishlist Button with Icon
+    // Wishlist Button
     wishlistButton = new QPushButton(this);
     QString wishlistIconPath = QCoreApplication::applicationDirPath() + "/../assets/images/nav/wishlistIcon.png";
     wishlistButton->setIcon(QIcon(wishlistIconPath));
-    wishlistButton->setIconSize(QSize(24, 24));  // Adjust icon size as needed
+    wishlistButton->setIconSize(QSize(24, 24));
     wishlistButton->setStyleSheet(
         "QPushButton {"
         "    border: none;"
@@ -229,19 +189,9 @@ void MainShopWindow::setupNavBar() {
         "}"
     );
 
-
-
-
-    
-    // User section
-    QLabel* userLabel = new QLabel(currentUserEmail);
-    userLabel->setStyleSheet("color: " + darkBlue + "; margin-right: 10px;");
-    
-
     // Profile Button
     profileButton = new QPushButton(this);
-    QString profileIconPath = QCoreApplication::applicationDirPath() + 
-                            "/../assets/images/nav/profileIcon.png";
+    QString profileIconPath = QCoreApplication::applicationDirPath() + "/../assets/images/nav/profileIcon.png";
     profileButton->setIcon(QIcon(profileIconPath));
     profileButton->setIconSize(QSize(24, 24));
     profileButton->setStyleSheet(
@@ -256,12 +206,18 @@ void MainShopWindow::setupNavBar() {
         "}"
     );
 
-    // Add buttons to navbar
-    navBar->addWidget(cartButton);
-    navBar->addWidget(wishlistButton);
+    // Add buttons to icon container
+    iconLayout->addWidget(cartButton);
+    iconLayout->addWidget(wishlistButton);
+    iconLayout->addWidget(profileButton);
+
+    // Add the icon container to navbar
+    navBar->addWidget(iconContainer);
+
+    // User email label
+    QLabel* userLabel = new QLabel(currentUserEmail);
+    userLabel->setStyleSheet("color: " + darkBlue + "; margin-right: 10px;");
     navBar->addWidget(userLabel);
-    navBar->addWidget(profileButton);  // Add profile button to navbar
-    
 
     addToolBar(navBar);
 
@@ -269,7 +225,7 @@ void MainShopWindow::setupNavBar() {
     setupProfileMenu();
 
     // Connect signals
-    connect(profileButton, &QPushButton::clicked, this, &MainShopWindow::toggleProfileMenu);    
+    connect(profileButton, &QPushButton::clicked, this, &MainShopWindow::toggleProfileMenu);
     connect(searchBar, &QLineEdit::returnPressed, this, &MainShopWindow::handleSearch);
 }
 
@@ -295,11 +251,17 @@ void MainShopWindow::setupProfileMenu() {
 
 void MainShopWindow::toggleProfileMenu() {
     if (profileMenu->isHidden()) {
-        // Position menu below profile button
+        // Calculate position to show menu below profile button
         QPoint pos = profileButton->mapToGlobal(QPoint(0, profileButton->height()));
         pos = mapFromGlobal(pos);
-        profileMenu->move(pos.x() - profileMenu->width() + profileButton->width(),
-                         pos.y() + 5);
+        
+        // Adjust position to align with right edge of profile button
+        pos.setX(pos.x() - profileMenu->width() + profileButton->width());
+        
+        // Add some offset to not overlap with button
+        pos.setY(pos.y() + 5);
+        
+        profileMenu->move(pos);
         profileMenu->show();
         
         // Add click outside event filter
@@ -314,16 +276,27 @@ void MainShopWindow::toggleProfileMenu() {
 
 
 
-bool MainShopWindow::eventFilter(QObject* obj, QEvent* event) {
+bool MainShopWindow::eventFilter(QObject* watched, QEvent* event) {
     if (event->type() == QEvent::MouseButtonPress) {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        if (!profileMenu->geometry().contains(mouseEvent->pos()) &&
-            !profileButton->geometry().contains(mouseEvent->pos())) {
-            profileMenu->hide();
-            qApp->removeEventFilter(this);
+        
+        // Handle logo click
+        if (QLabel* logo = qobject_cast<QLabel*>(watched)) {
+            showHomepage();
+            return true;
+        }
+        
+        // Handle clicking outside profile menu
+        if (profileMenu && !profileMenu->isHidden()) {
+            QPoint globalPos = mapToGlobal(mouseEvent->pos());
+            if (!profileMenu->geometry().contains(mapFromGlobal(globalPos)) &&
+                !profileButton->geometry().contains(mapFromGlobal(globalPos))) {
+                profileMenu->hide();
+                return true;
+            }
         }
     }
-    return QMainWindow::eventFilter(obj, event);
+    return QMainWindow::eventFilter(watched, event);
 }
 
 void MainShopWindow::setupCategoryBar() {
@@ -512,18 +485,17 @@ void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
     title->setAlignment(Qt::AlignCenter);
     featuredLayout->addWidget(title);
 
-    // Tabs container with fixed width to match indicators
+    // Tabs container
     QWidget* tabsWidget = new QWidget;
     QHBoxLayout* tabsLayout = new QHBoxLayout(tabsWidget);
-    tabsLayout->setSpacing(100);  // Add 100px spacing between tabs
     tabsLayout->setContentsMargins(0, 0, 0, 0);
     tabsLayout->setAlignment(Qt::AlignCenter);
 
-    // Create tab buttons
+    // Create tab buttons with fixed spacing
     QStringList categories = {"Tech", "Clothing", "Supplies"};
     for (int i = 0; i < categories.size(); ++i) {
         QPushButton* tab = new QPushButton(categories[i]);
-        tab->setFixedWidth(400);
+        tab->setFixedWidth(500);  // Fixed width for each tab
         tab->setStyleSheet(
             "QPushButton {"
             "    border: none;"
@@ -531,7 +503,7 @@ void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
             "    font-size: 16px;"
             "    color: " + darkBlue + ";"
             "    background: none;"
-            "    text-align: center;"  // Center the text
+            "    text-align: center;"
             "}"
             "QPushButton:hover {"
             "    color: " + sageGreen + ";"
@@ -540,21 +512,27 @@ void MainShopWindow::setupFeaturedSection(QVBoxLayout* parentLayout) {
         connect(tab, &QPushButton::clicked, this, [this, i]() { handleFeaturedTabChange(i); });
         featureTabButtons.append(tab);
         tabsLayout->addWidget(tab);
+
+        if (i < categories.size() - 1) {
+            // Add fixed spacing between buttons
+            QSpacerItem* spacer = new QSpacerItem(50, 0, QSizePolicy::Fixed, QSizePolicy::Minimum);
+            tabsLayout->addItem(spacer);
+        }
     }
 
-    // Create indicator container with fixed width
+    // Create indicator container
     QWidget* indicatorContainer = new QWidget;
     QHBoxLayout* indicatorLayout = new QHBoxLayout(indicatorContainer);
-    indicatorLayout->setSpacing(0);  // Remove spacing between indicators
+    indicatorLayout->setSpacing(0);  // No spacing between indicators
     indicatorLayout->setContentsMargins(0, 0, 0, 0);
     indicatorLayout->setAlignment(Qt::AlignCenter);
 
-    // Create indicator lines
+    // Create indicators with fixed width
     for (int i = 0; i < 3; ++i) {
         QFrame* line = new QFrame;
         line->setFixedHeight(3);
-        line->setFixedWidth(400);
-        line->setStyleSheet("background-color: " + lightGrey + "; margin: 0; padding: 0;");
+        line->setFixedWidth(500);  // Match tab width
+        line->setStyleSheet("background-color: " + lightGrey + ";");
         featureIndicators.append(line);
         indicatorLayout->addWidget(line);
     }
