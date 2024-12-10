@@ -4,6 +4,7 @@
 #include <QLabel>
 #include <QScrollArea>
 #include <QGraphicsDropShadowEffect>
+#include <QMessageBox>
 
 TextbookPage::TextbookPage(DatabaseManager* db, QWidget *parent)
     : QWidget(parent), dbManager(db), currentPage(1)
@@ -193,28 +194,44 @@ QWidget* TextbookPage::createBookCard(const Textbook& book) {
        "font-weight: bold;"
    );
    priceLabel->setAlignment(Qt::AlignCenter);
-   
-   // Add to Cart button
-   QPushButton* addToCartBtn = new QPushButton("Add to Cart");
-   addToCartBtn->setStyleSheet(
-       "QPushButton {"
-       "    background-color: #9CAF88;"
-       "    color: white;"
-       "    padding: 8px;"
-       "    border-radius: 4px;"
-       "    border: none;"
-       "}"
-       "QPushButton:hover {"
-       "    background-color: #2C3E50;"
-       "}"
-   );
+
+    QHBoxLayout* buttonLayout = new QHBoxLayout;
+
+    QPushButton* cartButton = new QPushButton;
+    cartButton->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../assets/images/nav/cartIcon.png"));
+    cartButton->setIconSize(QSize(24, 24));
+    cartButton->setStyleSheet(
+        "QPushButton {"
+        "    background-color: " + sageGreen + ";"
+        "    border-radius: 20px;"
+        "    padding: 8px;"
+        "}"
+        "QPushButton:hover {"
+        "    background-color: " + darkBlue + ";"
+        "}"
+    );
+
+    QPushButton* wishlistButton = new QPushButton;
+    wishlistButton->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../assets/images/nav/wishlistIcon.png"));
+    wishlistButton->setIconSize(QSize(24, 24));
+    wishlistButton->setStyleSheet(cartButton->styleSheet());
+
+    buttonLayout->addWidget(cartButton);
+    buttonLayout->addWidget(wishlistButton);
+    buttonLayout->setAlignment(Qt::AlignRight);
+
+
+    connect(cartButton, &QPushButton::clicked, [=]() {
+        dbManager->addToCart(currentUserEmail, book.productId, 1);
+        QMessageBox::information(this, "Success", "Added to cart!");
+    });
    
    // Add widgets to layout
    cardLayout->addWidget(imageLabel);
    cardLayout->addWidget(titleLabel);
    cardLayout->addWidget(courseLabel);
    cardLayout->addWidget(priceLabel);
-   cardLayout->addWidget(addToCartBtn);
+   cardLayout->addLayout(buttonLayout);
    cardLayout->addStretch();
    
    // Add shadow effect
@@ -225,6 +242,10 @@ QWidget* TextbookPage::createBookCard(const Textbook& book) {
    card->setGraphicsEffect(shadow);
    
    return card;
+}
+
+void TextbookPage::setUserEmail(const QString& email) {
+    currentUserEmail = email;
 }
 
 void TextbookPage::displayBooks(const QVector<Textbook>& books) {

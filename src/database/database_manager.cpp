@@ -41,6 +41,118 @@ void DatabaseManager::createTables() {
         "price REAL,"
         "image_path TEXT)"
     );
+
+    query.exec(
+        "CREATE TABLE IF NOT EXISTS cart ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "user_email TEXT,"
+        "product_id TEXT,"
+        "quantity INTEGER,"
+        "FOREIGN KEY(product_id) REFERENCES textbooks(product_id))"
+    );
+}
+
+// Adds item into cart database after add to cart is clciked
+bool DatabaseManager::addToCart(const QString& userEmail, const QString& productId, int quantity) {
+    quantity = 1;
+    QSqlQuery query;
+    query.prepare(
+        "INSERT INTO cart (user_email, product_id, quantity) "
+        "VALUES (?, ?, ?)"
+    );
+    query.addBindValue(userEmail);
+    query.addBindValue(productId);
+    query.addBindValue(quantity);
+    return query.exec();
+}
+
+// Adds textbook Listing onto DB
+bool DatabaseManager::createTextbookListing(
+    const QString& department,
+    const QString& lec,
+    const QString& courseCategory,
+    const QStringList& courseCodes,
+    const QString& title,
+    const QString& author,
+    double price,
+    const QString& imagePath
+) {
+    // Generate unique product ID (you might want to improve this)
+    QString productId = QString::number(QDateTime::currentSecsSinceEpoch());
+    
+    QSqlQuery query;
+    query.prepare(
+        "INSERT INTO textbooks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    );
+    
+    query.addBindValue(productId);
+    query.addBindValue(department);
+    query.addBindValue(lec);
+    query.addBindValue(courseCategory);
+    query.addBindValue(courseCodes.join(","));  // Store multiple codes as comma-separated
+    query.addBindValue(title);
+    query.addBindValue(author);
+    query.addBindValue(price);
+    query.addBindValue(imagePath);
+    
+    return query.exec();
+}
+
+
+
+// Change number of items of a particular item
+bool DatabaseManager::updateCartQuantity(const QString& userEmail, const QString& productId, int quantity) {
+    QSqlQuery query;
+    query.prepare(
+        "UPDATE cart SET quantity = ? "
+        "WHERE user_email = ? AND product_id = ?"
+    );
+    query.addBindValue(quantity);
+    query.addBindValue(userEmail);
+    query.addBindValue(productId);
+    return query.exec();
+}
+
+// Removes item from cart database
+bool DatabaseManager::removeFromCart(const QString& userEmail, const QString& productId) {
+    QSqlQuery query;
+    query.prepare(
+        "DELETE FROM cart WHERE user_email = ? AND product_id = ?"
+    );
+    query.addBindValue(userEmail);
+    query.addBindValue(productId);
+    return query.exec();
+}
+
+// Gets cart to display it in cart listing
+QVector<QPair<Textbook, int>> DatabaseManager::getCart(const QString& userEmail) {
+    QVector<QPair<Textbook, int>> cartItems;
+    QSqlQuery query;
+    query.prepare(
+        "SELECT t.*, c.quantity FROM cart c "
+        "JOIN textbooks t ON c.product_id = t.product_id "
+        "WHERE c.user_email = ?"
+    );
+    query.addBindValue(userEmail);
+    
+    if (query.exec()) {
+        while (query.next()) {
+            Textbook book(
+                query.value("department").toString(),
+                query.value("lec").toString(),
+                query.value("course_category").toString(),
+                query.value("course_code").toString(),
+                query.value("title").toString(),
+                query.value("author").toString(),
+                query.value("product_id").toString(),
+                query.value("price").toDouble(),
+                query.value("image_path").toString()
+            );
+            cartItems.append({book, query.value("quantity").toInt()});
+        }
+    }
+    
+    return cartItems;
 }
 
 void DatabaseManager::populateInitialData() {

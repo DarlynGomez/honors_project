@@ -619,6 +619,10 @@ void MainShopWindow::handleSearch() {
 void MainShopWindow::showTextbooks() {
     homepageStack->hide();
     contentStack->show();
+    TextbookPage* textbookPage = qobject_cast<TextbookPage*>(contentStack->widget(0));
+    if (textbookPage) {
+        textbookPage->setUserEmail(currentUserEmail);
+    }
     contentStack->setCurrentIndex(0);
 }
 

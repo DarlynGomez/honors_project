@@ -14,6 +14,7 @@ class TextbookPage : public QWidget {
 
 public:
     explicit TextbookPage(DatabaseManager* db, QWidget *parent = nullptr);
+    void setUserEmail(const QString& email); // Get User email in session
 
 private slots:
     void handleFilter();
@@ -24,6 +25,7 @@ private:
     DatabaseManager* dbManager;
     QComboBox* departmentCombo;
     QLineEdit* lecInput;
+    QString currentUserEmail; // Store current user email
     QComboBox* categoryCombo;
     QLineEdit* codeInput;
     QLineEdit* searchInput;
@@ -38,6 +40,11 @@ private:
     QWidget* createBookCard(const Textbook& book);
     void loadDepartments();
     void loadCategories();
+
+    // My Style Colors
+    const QString sageGreen = "#9CAF88";    
+    const QString darkBlue = "#2C3E50";
+    const QString lightSage = "#E8F0E3";
 };
 
 #endif
