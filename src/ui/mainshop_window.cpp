@@ -31,14 +31,19 @@ MainShopWindow::MainShopWindow(Authenticator* auth, DatabaseManager* db, const Q
     , electronicsButton(nullptr)
     , suppliesButton(nullptr)
     , clothingButton(nullptr)
+    , profilePage(nullptr)
 {
     setupUI();
     handleFeaturedTabChange(0);
 }
 
+// Update UI elements that display the email
 void MainShopWindow::setUserEmail(const QString& email) {
     currentUserEmail = email;
-    // Update UI elements that display the email
+    if (profilePage) {
+        delete profilePage;
+        profilePage = nullptr;
+    }
 }
 
 void MainShopWindow::setupUI() {
@@ -231,9 +236,38 @@ void MainShopWindow::setupNavBar() {
 
 // Implement the showProfile method
 void MainShopWindow::showProfile() {
-    // We'll implement this when we create the profile page
-    // For now, just a placeholder:
-    qDebug() << "Show profile clicked";
+    // If profile page doesn't exist, create it
+    if (!profilePage) {
+        profilePage = new ProfilePage(authenticator, dbManager, currentUserEmail, this);
+        contentStack->addWidget(profilePage);
+    }
+
+    // Hide profile menu
+    profileMenu->hide();
+
+    // Hide homepage stack and show content stack
+    homepageStack->hide();
+    contentStack->show();
+
+    // Switch to profile page with fade transition
+    QWidget* currentWidget = contentStack->currentWidget();
+    profilePage->setWindowOpacity(0.0);
+    contentStack->setCurrentWidget(profilePage);
+
+    // Fade out current widget
+    QPropertyAnimation* fadeOut = new QPropertyAnimation(currentWidget, "windowOpacity");
+    fadeOut->setDuration(200);
+    fadeOut->setStartValue(1.0);
+    fadeOut->setEndValue(0.0);
+    
+    // Fade in profile page
+    QPropertyAnimation* fadeIn = new QPropertyAnimation(profilePage, "windowOpacity");
+    fadeIn->setDuration(200);
+    fadeIn->setStartValue(0.0);
+    fadeIn->setEndValue(1.0);
+
+    fadeOut->start(QAbstractAnimation::DeleteWhenStopped);
+    fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 
@@ -243,6 +277,7 @@ void MainShopWindow::setupProfileMenu() {
     profileMenu->hide();
     
     // Connect signals
+    connect(profileMenu, &ProfileMenu::profileRequested, this, &MainShopWindow::showProfile);
     connect(profileMenu, &ProfileMenu::logoutRequested, 
             this, &MainShopWindow::handleLogout);
     connect(profileMenu, &ProfileMenu::profileRequested, 
@@ -251,20 +286,29 @@ void MainShopWindow::setupProfileMenu() {
 
 void MainShopWindow::toggleProfileMenu() {
     if (profileMenu->isHidden()) {
-        // Calculate position to show menu below profile button
-        QPoint pos = profileButton->mapToGlobal(QPoint(0, profileButton->height()));
-        pos = mapFromGlobal(pos);
+        // Calculate position relative to the profile button
+        QPoint buttonPos = profileButton->mapToGlobal(QPoint(0, 0));
+        QPoint menuPos = buttonPos + QPoint(
+            profileButton->width() - profileMenu->width(),  // Align right edge
+            profileButton->height() + 5  // Small gap below button
+        );
         
-        // Adjust position to align with right edge of profile button
-        pos.setX(pos.x() - profileMenu->width() + profileButton->width());
+        // Move menu to calculated position
+        profileMenu->move(mapFromGlobal(menuPos));
         
-        // Add some offset to not overlap with button
-        pos.setY(pos.y() + 5);
+        // Show menu with fade effect
+        QGraphicsOpacityEffect* opacity = new QGraphicsOpacityEffect(profileMenu);
+        profileMenu->setGraphicsEffect(opacity);
         
-        profileMenu->move(pos);
+        QPropertyAnimation* fadeIn = new QPropertyAnimation(opacity, "opacity");
+        fadeIn->setDuration(150);
+        fadeIn->setStartValue(0.0);
+        fadeIn->setEndValue(1.0);
+        fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
+        
         profileMenu->show();
         
-        // Add click outside event filter
+        // Install event filter to handle clicking outside
         qApp->installEventFilter(this);
     } else {
         profileMenu->hide();
@@ -278,20 +322,13 @@ void MainShopWindow::toggleProfileMenu() {
 
 bool MainShopWindow::eventFilter(QObject* watched, QEvent* event) {
     if (event->type() == QEvent::MouseButtonPress) {
-        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        
-        // Handle logo click
-        if (QLabel* logo = qobject_cast<QLabel*>(watched)) {
-            showHomepage();
-            return true;
-        }
-        
-        // Handle clicking outside profile menu
         if (profileMenu && !profileMenu->isHidden()) {
-            QPoint globalPos = mapToGlobal(mouseEvent->pos());
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            QPoint globalPos = mouseEvent->globalPosition().toPoint();  // Use globalPosition()
             if (!profileMenu->geometry().contains(mapFromGlobal(globalPos)) &&
                 !profileButton->geometry().contains(mapFromGlobal(globalPos))) {
                 profileMenu->hide();
+                qApp->removeEventFilter(this);
                 return true;
             }
         }

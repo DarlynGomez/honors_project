@@ -30,6 +30,7 @@ set(SOURCES
     src/ui/textbook_page.cpp
     src/database/database_manager.cpp
     src/database/textbook.cpp
+    src/ui/profile_page.cpp 
 )
 
 # Header files
@@ -44,6 +45,7 @@ set(HEADERS
     include/ui/textbook_page.h
     include/database/database_manager.h
     include/database/textbook.h
+    include/ui/profile_page.h
 )
 
 # Create executable

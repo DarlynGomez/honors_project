@@ -13,6 +13,7 @@
 #include "../auth/authenticator.h"
 #include "database/database_manager.h"
 #include "../ui/profile_menu.h"    // Add this for ProfileMenu
+#include "ui/profile_page.h" // This if for the profile page
 
 #include <QGraphicsEffect>  // For modifying my widgets appearence like CSS
 #include <QPropertyAnimation>  // Smooth time based transtions for objects
@@ -57,6 +58,9 @@ private:
     QWidget* createFeaturedTab(const QString& category);
     void switchFeaturedTab(int index);
     void showHomepage();
+
+    // Profile Components
+    ProfilePage* profilePage;
 
     // Core components
     Authenticator* authenticator;   // Manages my user authentication

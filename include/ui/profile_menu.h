@@ -1,4 +1,3 @@
-// include/ui/profile_menu.h
 #ifndef PROFILE_MENU_H
 #define PROFILE_MENU_H
 

@@ -1,12 +1,7 @@
-// src/ui/profile_menu.cpp
 #include "ui/profile_menu.h"
 #include <QVBoxLayout>
 
 ProfileMenu::ProfileMenu(QWidget *parent) : QWidget(parent) {
-    // Initialize buttons before setupUI
-    profileButton = new QPushButton("Profile", this);
-    logoutButton = new QPushButton("Logout", this);
-    
     setupUI();
     
     // Connect signals
@@ -27,7 +22,11 @@ void ProfileMenu::setupUI() {
 
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setSpacing(0);
-    layout->setContentsMargins(0, 5, 0, 5);  // Add some vertical padding
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    // Create buttons
+    profileButton = new QPushButton("Profile", this);
+    logoutButton = new QPushButton("Logout", this);
 
     // Update button styles
     QString buttonStyle =
@@ -35,7 +34,7 @@ void ProfileMenu::setupUI() {
         "    color: #2C3E50;"
         "    background: none;"
         "    border: none;"
-        "    padding: 10px 20px;"
+        "    padding: 15px 20px;"
         "    text-align: left;"
         "    font-size: 14px;"
         "    width: 100%;"  // Make buttons fill width
@@ -46,4 +45,8 @@ void ProfileMenu::setupUI() {
 
     profileButton->setStyleSheet(buttonStyle);
     logoutButton->setStyleSheet(buttonStyle);
+
+    // Add buttons to layout
+    layout->addWidget(profileButton);
+    layout->addWidget(logoutButton);
 }
