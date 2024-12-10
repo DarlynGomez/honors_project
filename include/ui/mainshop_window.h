@@ -7,8 +7,11 @@
 #include <QPushButton> // Gives clickable button
 #include <QStackedWidget> // Switchign between widgets or pages
 #include <QLabel> // Displays static, dynamic text, or images
+#include <QEvent>    // For QMouseEvent
+#include <QApplication>   // Add this for qApp
 #include "../auth/authenticator.h"
 #include "database/database_manager.h"
+#include "../ui/profile_menu.h"    // Add this for ProfileMenu
 
 #include <QGraphicsEffect>  // For modifying my widgets appearence like CSS
 #include <QPropertyAnimation>  // Smooth time based transtions for objects
@@ -41,6 +44,7 @@ private slots:
     void showWishlist();
     void handleLogout();
     void handleFeaturedTabChange(int index);
+    void showProfile();
 
 private:
     QVector<QFrame*> featureIndicators; 
@@ -58,6 +62,12 @@ private:
     QString currentUserEmail;   // Stores the email of the user logged in
     QStackedWidget* contentStack;   // Stack for displaying my windows
     DatabaseManager* dbManager; // Stores my database for products
+
+    // Related to my profile button
+    QPushButton* profileButton;
+    ProfileMenu* profileMenu;
+    void setupProfileMenu();
+    void toggleProfileMenu();
 
     // Navigation components
     QToolBar* preNavBar;   // My pre-navigation bar

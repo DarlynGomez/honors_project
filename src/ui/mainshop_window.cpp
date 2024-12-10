@@ -13,6 +13,7 @@
 #include <QGridLayout>
 #include <QCoreApplication>
 #include <QDebug>
+#include <QMouseEvent>
 
 
 MainShopWindow::MainShopWindow(Authenticator* auth, DatabaseManager* db, const QString& userEmail, QWidget *parent)
@@ -236,38 +237,93 @@ void MainShopWindow::setupNavBar() {
     QLabel* userLabel = new QLabel(currentUserEmail);
     userLabel->setStyleSheet("color: " + darkBlue + "; margin-right: 10px;");
     
-    QPushButton* logoutBtn = new QPushButton("Logout");
-    logoutBtn->setStyleSheet(
+
+    // Profile Button
+    profileButton = new QPushButton(this);
+    QString profileIconPath = QCoreApplication::applicationDirPath() + 
+                            "/../assets/images/nav/profileIcon.png";
+    profileButton->setIcon(QIcon(profileIconPath));
+    profileButton->setIconSize(QSize(24, 24));
+    profileButton->setStyleSheet(
         "QPushButton {"
-        "    color: " + darkBlue + ";"
         "    border: none;"
-        "    padding: 5px 10px;"
-        "    font-size: 14px;"
+        "    padding: 8px;"
+        "    border-radius: 20px;"
+        "    background-color: transparent;"
         "}"
-        "QPushButton:hover { color: " + sageGreen + "; }"
+        "QPushButton:hover {"
+        "    background-color: " + lightSage + ";"
+        "}"
     );
 
     // Add buttons to navbar
     navBar->addWidget(cartButton);
     navBar->addWidget(wishlistButton);
     navBar->addWidget(userLabel);
-    navBar->addWidget(logoutBtn);
+    navBar->addWidget(profileButton);  // Add profile button to navbar
+    
 
     addToolBar(navBar);
 
+    // Setup profile menu
+    setupProfileMenu();
+
     // Connect signals
-    connect(logoutBtn, &QPushButton::clicked, this, &MainShopWindow::handleLogout);
+    connect(profileButton, &QPushButton::clicked, this, &MainShopWindow::toggleProfileMenu);    
     connect(searchBar, &QLineEdit::returnPressed, this, &MainShopWindow::handleSearch);
 }
 
-bool MainShopWindow::eventFilter(QObject* watched, QEvent* event) {
-    if (event->type() == QEvent::MouseButtonRelease) {
-        if (QLabel* logo = qobject_cast<QLabel*>(watched)) {
-            showHomepage();
-            return true;
+// Implement the showProfile method
+void MainShopWindow::showProfile() {
+    // We'll implement this when we create the profile page
+    // For now, just a placeholder:
+    qDebug() << "Show profile clicked";
+}
+
+
+// Sets up profile drop down/ pop-up menu
+void MainShopWindow::setupProfileMenu() {
+    profileMenu = new ProfileMenu(this);
+    profileMenu->hide();
+    
+    // Connect signals
+    connect(profileMenu, &ProfileMenu::logoutRequested, 
+            this, &MainShopWindow::handleLogout);
+    connect(profileMenu, &ProfileMenu::profileRequested, 
+            this, &MainShopWindow::showProfile); // We'll implement this later
+}
+
+void MainShopWindow::toggleProfileMenu() {
+    if (profileMenu->isHidden()) {
+        // Position menu below profile button
+        QPoint pos = profileButton->mapToGlobal(QPoint(0, profileButton->height()));
+        pos = mapFromGlobal(pos);
+        profileMenu->move(pos.x() - profileMenu->width() + profileButton->width(),
+                         pos.y() + 5);
+        profileMenu->show();
+        
+        // Add click outside event filter
+        qApp->installEventFilter(this);
+    } else {
+        profileMenu->hide();
+        qApp->removeEventFilter(this);
+    }
+}
+
+
+
+
+
+bool MainShopWindow::eventFilter(QObject* obj, QEvent* event) {
+    if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        if (!profileMenu->geometry().contains(mouseEvent->pos()) &&
+            !profileButton->geometry().contains(mouseEvent->pos())) {
+            profileMenu->hide();
+            qApp->removeEventFilter(this);
         }
     }
-    return QMainWindow::eventFilter(watched, event);
+    return QMainWindow::eventFilter(obj, event);
 }
 
 void MainShopWindow::setupCategoryBar() {
