@@ -484,6 +484,12 @@ QWidget* TextbookPage::createBookCard(const Textbook& book) {
     wishlistButton->setIconSize(QSize(24, 24));
     wishlistButton->setStyleSheet(cartButton->styleSheet());
 
+    // Add this connect statement:
+    connect(wishlistButton, &QPushButton::clicked, [=]() {
+        dbManager->addToWishlist(currentUserEmail, book.productId);
+        QMessageBox::information(this, "Success", "Added to wishlist!");
+    });
+
     buttonLayout->addWidget(cartButton);
     buttonLayout->addWidget(wishlistButton);
     buttonLayout->setAlignment(Qt::AlignRight);

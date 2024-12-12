@@ -23,6 +23,7 @@ class QHBoxLayout;
 class QVBoxLayout;
 class TextbookPage;
 class CartPage;
+class WishlistPage;
 
 class MainShopWindow : public QMainWindow {
     Q_OBJECT    // How I make my slots and signal connections
@@ -33,6 +34,7 @@ public:
     void setUserEmail(const QString& email);
     // Makes my user email accessible
     void refreshTextbookPage();
+    void showElectronics();
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -42,7 +44,6 @@ private slots:
     void showHomepage();    // Returns to main homepage
     void showTextbooks();
     void showFurniture();
-    void showElectronics();
     void showSchoolSupplies();
     void showClothing();
     void showWishlist();
@@ -65,6 +66,9 @@ private:
 
     // Profile Components
     ProfilePage* profilePage;
+
+    // Wishlist page
+    WishlistPage* wishlistPage;
 
     // Cart Page
     CartPage* cartPage;

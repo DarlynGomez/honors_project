@@ -32,6 +32,7 @@ set(SOURCES
     src/database/database_manager.cpp
     src/database/textbook.cpp
     src/ui/profile_page.cpp 
+    src/ui/wishlist_page.cpp 
 )
 
 # Header files
@@ -48,6 +49,7 @@ set(HEADERS
     include/database/database_manager.h
     include/database/textbook.h
     include/ui/profile_page.h
+    include/ui/wishlist_page.h
     
 )
 

@@ -45,6 +45,16 @@ void DatabaseManager::createTables() {
         "image_path TEXT)"
     );
 
+    // Create wishlist table
+    query.exec(
+        "CREATE TABLE IF NOT EXISTS wishlist ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "user_email TEXT,"
+        "product_id TEXT,"
+        "FOREIGN KEY(product_id) REFERENCES textbooks(product_id),"
+        "UNIQUE(user_email, product_id))"
+    );
+
     // Create cart table
     query.exec(
         "CREATE TABLE IF NOT EXISTS cart ("
@@ -106,6 +116,56 @@ bool DatabaseManager::addToCart(const QString& userEmail, const QString& product
         qDebug() << "Exception in addToCart:" << e.what();
         return false;  // Return false to show failure
     }
+}
+
+bool DatabaseManager::addToWishlist(const QString& userEmail, const QString& productId) {
+    QSqlQuery query;
+    query.prepare(
+        "INSERT OR IGNORE INTO wishlist (user_email, product_id) "
+        "VALUES (?, ?)"
+    );
+    query.addBindValue(userEmail);
+    query.addBindValue(productId);
+    return query.exec();
+}
+
+bool DatabaseManager::removeFromWishlist(const QString& userEmail, const QString& productId) {
+    QSqlQuery query;
+    query.prepare(
+        "DELETE FROM wishlist WHERE user_email = ? AND product_id = ?"
+    );
+    query.addBindValue(userEmail);
+    query.addBindValue(productId);
+    return query.exec();
+}
+
+QVector<Textbook> DatabaseManager::getWishlist(const QString& userEmail) {
+    QVector<Textbook> wishlistItems;
+    QSqlQuery query;
+    query.prepare(
+        "SELECT t.* FROM wishlist w "
+        "JOIN textbooks t ON w.product_id = t.product_id "
+        "WHERE w.user_email = ?"
+    );
+    query.addBindValue(userEmail);
+    
+    if (query.exec()) {
+        while (query.next()) {
+            wishlistItems.append(Textbook(
+                query.value("department").toString(),
+                query.value("lec").toString(),
+                query.value("course_category").toString(),
+                query.value("course_code").toString(),
+                query.value("title").toString(),
+                query.value("author").toString(),
+                query.value("product_id").toString(),
+                query.value("price").toDouble(),
+                query.value("image_path").toString()
+            ));
+        }
+    }
+    
+    return wishlistItems;
 }
 
 

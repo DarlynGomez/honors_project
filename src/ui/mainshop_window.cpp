@@ -1,4 +1,5 @@
 #include "../include/ui/mainshop_window.h"
+#include "ui/wishlist_page.h"
 #include "ui/cart_page.h"
 #include "ui/textbook_page.h"
 #include <QVBoxLayout>
@@ -15,6 +16,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QMouseEvent>
+
 
 
 MainShopWindow::MainShopWindow(Authenticator* auth, DatabaseManager* db, const QString& userEmail, QWidget *parent)
@@ -34,6 +36,7 @@ MainShopWindow::MainShopWindow(Authenticator* auth, DatabaseManager* db, const Q
     , clothingButton(nullptr)
     , profilePage(nullptr)
     , profileMenu(nullptr)
+    , wishlistPage(nullptr)
 {
     setupUI();
     handleFeaturedTabChange(0);
@@ -306,6 +309,33 @@ void MainShopWindow::setupNavBar() {
 
         connect(revertAnim, &QPropertyAnimation::finished, [=]() {
             toggleProfileMenu();
+        });
+
+        clickAnim->start(QAbstractAnimation::DeleteWhenStopped);
+    });
+
+    connect(wishlistButton, &QPushButton::clicked, this, [this]() {
+        QGraphicsOpacityEffect* effect = new QGraphicsOpacityEffect(wishlistButton);
+        wishlistButton->setGraphicsEffect(effect);
+
+        QPropertyAnimation* clickAnim = new QPropertyAnimation(effect, "opacity");
+        clickAnim->setDuration(100);
+        clickAnim->setStartValue(1.0);
+        clickAnim->setEndValue(0.5);
+        clickAnim->setEasingCurve(QEasingCurve::OutQuad);
+
+        QPropertyAnimation* revertAnim = new QPropertyAnimation(effect, "opacity");
+        revertAnim->setDuration(100);
+        revertAnim->setStartValue(0.5);
+        revertAnim->setEndValue(1.0);
+        revertAnim->setEasingCurve(QEasingCurve::InQuad);
+
+        connect(clickAnim, &QPropertyAnimation::finished, [=]() {
+            revertAnim->start(QAbstractAnimation::DeleteWhenStopped);
+        });
+
+        connect(revertAnim, &QPropertyAnimation::finished, [=]() {
+            showWishlist();
         });
 
         clickAnim->start(QAbstractAnimation::DeleteWhenStopped);
@@ -790,7 +820,41 @@ void MainShopWindow::showCart() {
 }
 
 void MainShopWindow::showWishlist() {
-    // Implement wishlist view
+    if (!wishlistPage) {
+        wishlistPage = new WishlistPage(dbManager, currentUserEmail, this);
+        contentStack->addWidget(wishlistPage);
+        
+        // Connect continue shopping signal
+        connect(wishlistPage, &WishlistPage::continueShoppingClicked, [this]() {
+            showHomepage();
+        });
+    }
+    
+    wishlistPage->setUserEmail(currentUserEmail);
+    wishlistPage->refreshWishlist();
+    
+    homepageStack->hide();
+    contentStack->show();
+
+    // Fade transition to wishlist page
+    QWidget* currentWidget = contentStack->currentWidget();
+    wishlistPage->setWindowOpacity(0.0);
+    contentStack->setCurrentWidget(wishlistPage);
+
+    // Fade out current widget
+    QPropertyAnimation* fadeOut = new QPropertyAnimation(currentWidget, "windowOpacity");
+    fadeOut->setDuration(200);
+    fadeOut->setStartValue(1.0);
+    fadeOut->setEndValue(0.0);
+    
+    // Fade in wishlist page
+    QPropertyAnimation* fadeIn = new QPropertyAnimation(wishlistPage, "windowOpacity");
+    fadeIn->setDuration(200);
+    fadeIn->setStartValue(0.0);
+    fadeIn->setEndValue(1.0);
+
+    fadeOut->start(QAbstractAnimation::DeleteWhenStopped);
+    fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void MainShopWindow::handleLogout() {

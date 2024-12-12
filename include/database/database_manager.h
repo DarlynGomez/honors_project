@@ -23,6 +23,10 @@ public:
         double price,
         const QString& imagePath
     );
+    // Wishlist Functionality
+    bool addToWishlist(const QString& userEmail, const QString& productId);
+    bool removeFromWishlist(const QString& userEmail, const QString& productId);
+    QVector<Textbook> getWishlist(const QString& userEmail);
     
     // Cart Database Functionality
     bool addToCart(const QString& userEmail, const QString& productId, int quantity);

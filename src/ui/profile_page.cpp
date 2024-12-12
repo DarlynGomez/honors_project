@@ -533,11 +533,11 @@ void ProfilePage::showCreateListingDialog() {
             // Copy the new file
             if (!QFile::copy(imagePath, destPath)) {
                 qDebug() << "Failed to copy image file to:" << destPath;
-                destPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/default_book.jpg";
+                destPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/blackwitch.jpeg";
             }
         } else {
             // Set default image path if no image was selected
-            destPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/default_book.jpg";
+            destPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/blackwitch.jpeg";
         }
 
         qDebug() << "Image path being saved:" << destPath;  // Debug line
