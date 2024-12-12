@@ -12,6 +12,8 @@
 #include <QDialog>
 #include <QFileDialog>
 #include <QRegularExpression>
+#include <QGridLayout>
+#include <QVBoxLayout>
 #include <QMessageBox>
 #include "../auth/authenticator.h"
 #include "../database/database_manager.h"
@@ -46,6 +48,7 @@ private slots:
     void viewOrderHistory();  // Slot to view the user's order history
 
 private:
+    QGridLayout* listingsGrid;
     // Core components
     Authenticator* authenticator;
     DatabaseManager* dbManager;
@@ -74,6 +77,7 @@ private:
     QPushButton* createStyledButton(const QString& text, bool isPrimary = false);
     
     void setupUI();
+    void refreshListings();
     void extractNameFromEmail();
     void showCreateListingDialog();
     QString handleImageUpload();

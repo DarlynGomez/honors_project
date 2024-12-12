@@ -1,6 +1,7 @@
 #include "database/database_manager.h"
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSql>
 #include <QDebug>
 
 DatabaseManager::DatabaseManager() {
@@ -119,12 +120,14 @@ bool DatabaseManager::createTextbookListing(
     double price,
     const QString& imagePath
 ) {
-    // Generate unique product ID (you might want to improve this)
+    // Generate unique product ID using timestamp
     QString productId = QString::number(QDateTime::currentSecsSinceEpoch());
     
     QSqlQuery query;
     query.prepare(
-        "INSERT INTO textbooks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT INTO textbooks "
+        "(product_id, department, lec, course_category, course_code, title, author, price, image_path) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     
     query.addBindValue(productId);
@@ -137,9 +140,13 @@ bool DatabaseManager::createTextbookListing(
     query.addBindValue(price);
     query.addBindValue(imagePath);
     
-    return query.exec();
+    bool success = query.exec();
+    if (!success) {
+        qDebug() << "Failed to create listing:" << query.lastError().text();
+    }
+    
+    return success;
 }
-
 
 
 // Change number of items of a particular item

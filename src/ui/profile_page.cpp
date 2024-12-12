@@ -226,17 +226,20 @@ QWidget* ProfilePage::createListingsSection() {
     headerLayout->addWidget(createButton);
     layout->addWidget(headerWidget);
 
+
     // Grid for listings
     QWidget* gridContainer = new QWidget;
-    QGridLayout* grid = new QGridLayout(gridContainer);
-    grid->setSpacing(20);
-    grid->setContentsMargins(0, 0, 0, 0);
+    listingsGrid = new QGridLayout(gridContainer);  // Use the member variable
+    listingsGrid->setSpacing(20);
+    listingsGrid->setContentsMargins(0, 0, 0, 0);
 
     // Sample listing cards
     for (int i = 0; i < 6; i++) {
         QWidget* card = createListingCard();
-        grid->addWidget(card, i / 2, i % 2);
+        listingsGrid->addWidget(card, i / 2, i % 2);  // Use the member variable
     }
+
+
 
     layout->addWidget(gridContainer);
     layout->addStretch();
@@ -344,123 +347,227 @@ QWidget* ProfilePage::createListingCard(const QString& title, double price,
 void ProfilePage::showCreateListingDialog() {
     QDialog* dialog = new QDialog(this);
     dialog->setWindowTitle("Create New Listing");
-    dialog->setMinimumWidth(500);
-    dialog->setStyleSheet("QDialog { background-color: white; }");
+    dialog->setFixedSize(600, 750);  // Set a fixed size that fits the screen
+    dialog->setStyleSheet(
+        "QDialog {"
+        "    background-color: white;"
+        "    border-radius: 15px;"
+        "}"
+        "QLabel {"
+        "    color: " + darkBlue + ";"
+        "    font-weight: bold;"
+        "    margin-top: 5px;"  // Reduced from 10px
+        "}"
+        "QLineEdit, QComboBox {"
+        "    padding: 8px;"     // Reduced from 10px
+        "    border: 2px solid #E0E0E0;"
+        "    border-radius: 8px;"
+        "    font-size: 14px;"
+        "    background: white;"
+        "    min-width: 200px;"
+        "}"
+        "QLineEdit:focus, QComboBox:focus {"
+        "    border-color: " + sageGreen + ";"
+        "}"
+        "QPushButton {"
+        "    padding: 8px 20px;"  // Reduced padding
+        "    border-radius: 20px;"
+        "    font-size: 14px;"
+        "    font-weight: bold;"
+        "    min-width: 120px;"
+        "}"
+    );
 
+    // Make layout more compact
     QVBoxLayout* layout = new QVBoxLayout(dialog);
-    layout->setSpacing(20);
-    layout->setContentsMargins(30, 30, 30, 30);
+    layout->setSpacing(10);  // Reduced from 20
+    layout->setContentsMargins(20, 20, 20, 20);  // Reduced from 30
 
-    // Category selection
-    QLabel* categoryLabel = new QLabel("Category:", dialog);
-    QComboBox* categoryCombo = new QComboBox(dialog);
-    categoryCombo->addItems({"Textbooks", "Furniture", "Electronics", "School Supplies", "Clothing"});
-    
-    // Stack for category-specific inputs
-    QStackedWidget* inputStack = new QStackedWidget;
-    
-    // Create textbook form
-    QWidget* textbookForm = new QWidget;
-    QVBoxLayout* textbookLayout = new QVBoxLayout(textbookForm);
-    
-    // Textbook name
-    QLabel* nameLabel = new QLabel("Textbook Name:", dialog);
-    QLineEdit* nameInput = new QLineEdit(dialog);
-    
-    // Department
+    // Department Selection
     QLabel* deptLabel = new QLabel("Department:", dialog);
-    QLineEdit* deptInput = new QLineEdit(dialog);
-    
+    QComboBox* deptCombo = new QComboBox(dialog);
+    deptCombo->addItems({
+        "Academic Literacy and Linguistics",
+        "Accounting",
+        "Allied Health Sciences",
+        "Business Management",
+        "Computer Information Systems",
+        "Computer Science",
+        "English",
+        "Ethnic and Race Studies",
+        "Health Studies",
+        "Library",
+        "Mathematics",
+        "Media Arts and Technology",
+        "Modern Languages",
+        "Music and Art",
+        "Nursing",
+        "Science",
+        "Social Sciences, Human Services and Criminal Justice",
+        "Speech, Communications and Theatre Arts",
+        "Student Life",
+        "Teacher Education"
+    });
+
     // Course Section
     QLabel* sectionLabel = new QLabel("Course Section:", dialog);
     QComboBox* sectionCombo = new QComboBox;
-    sectionCombo->addItem("CSC");
-    // Add other sections as needed
-    
-    // Course Codes
-    QLabel* codesLabel = new QLabel("Course Codes (Multiple Selection):", dialog);
-    QListWidget* codesWidget = new QListWidget;
-    codesWidget->setSelectionMode(QAbstractItemView::MultiSelection);
-    QStringList codes = {"111", "110", "211"};
-    for(const QString& code : codes) {
-        codesWidget->addItem(code);
-    }
-    codesWidget->setMaximumHeight(100);
-    
+    sectionCombo->addItems({
+        "ACC", "AFL", "AFN", "ANT", "ARC", "ART", "ASL", "ASN", "BIO", 
+        "BTE", "BUS", "CHE", "CHI", "CIS", "CRJ", "CSC", "ECO", "ECE", 
+        "ENG", "ESL", "FNB", "FRN", "GEO", "HED", "HIS", "HSC", "ITL", 
+        "LIN", "MAT", "MES", "MUS", "NUR", "PHY", "POL", "PSY", "RDG", 
+        "SCI", "SOC", "SPN", "SPE", "THE", "VAT"
+    });
+
+    // Book Title
+    QLabel* titleLabel = new QLabel("Book Title:", dialog);
+    QLineEdit* titleInput = new QLineEdit(dialog);
+    titleInput->setPlaceholderText("Enter book title");
+
+    // Course Number
+    QLabel* courseLabel = new QLabel("Course Number:", dialog);
+    QLineEdit* courseInput = new QLineEdit(dialog);
+    courseInput->setPlaceholderText("e.g., 101, 201, etc.");
+
     // LEC Code
-    QLabel* lecLabel = new QLabel("LEC Code (Optional):", dialog);
-    QLineEdit* lecInput = new QLineEdit;
-    
+    QLabel* lecLabel = new QLabel("LEC Code:", dialog);
+    QLineEdit* lecInput = new QLineEdit(dialog);
+    lecInput->setPlaceholderText("e.g., 1234");
+
     // Price
     QLabel* priceLabel = new QLabel("Price ($):", dialog);
-    QLineEdit* priceInput = new QLineEdit;
-    priceInput->setValidator(new QDoubleValidator(0, 99999.99, 2));
+    QLineEdit* priceInput = new QLineEdit(dialog);
+    priceInput->setPlaceholderText("0.00");
+    QDoubleValidator* validator = new QDoubleValidator(0, 9999.99, 2, priceInput);
+    priceInput->setValidator(validator);
 
-    // Add widgets to textbook layout
-    textbookLayout->addWidget(nameLabel);
-    textbookLayout->addWidget(nameInput);
-    textbookLayout->addWidget(deptLabel);
-    textbookLayout->addWidget(deptInput);
-    textbookLayout->addWidget(sectionLabel);
-    textbookLayout->addWidget(sectionCombo);
-    textbookLayout->addWidget(codesLabel);
-    textbookLayout->addWidget(codesWidget);
-    textbookLayout->addWidget(lecLabel);
-    textbookLayout->addWidget(lecInput);
-    textbookLayout->addWidget(priceLabel);
-    textbookLayout->addWidget(priceInput);
+    // Image Upload
+    QLabel* imageLabel = new QLabel("Book Image:", dialog);
+    QPushButton* imageButton = new QPushButton("Upload Image", dialog);
+    imageButton->setStyleSheet(
+        "background-color: " + sageGreen + ";"
+        "color: white;"
+    );
+    QLabel* imagePreview = new QLabel(dialog);
+    imagePreview->setFixedSize(80, 100); 
+    imagePreview->setStyleSheet(
+        "border: 2px dashed #E0E0E0;"
+        "border-radius: 10px;"
+    );
+    imagePreview->setAlignment(Qt::AlignCenter);
 
-    // Add textbook form to stack
-    inputStack->addWidget(textbookForm);
-    
-    // Add other category forms as needed...
-    
-    // Connect category combo to show appropriate form
-    connect(categoryCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            inputStack, &QStackedWidget::setCurrentIndex);
-    
-    // Add to main layout
-    layout->addWidget(categoryLabel);
-    layout->addWidget(categoryCombo);
-    layout->addWidget(inputStack);
-    
-    // Add buttons
+    QString imagePath;
+    connect(imageButton, &QPushButton::clicked, [&]() {
+        QString fileName = QFileDialog::getOpenFileName(dialog,
+            "Select Image", "", "Image Files (*.png *.jpg *.jpeg)");
+        if (!fileName.isEmpty()) {
+            QPixmap pixmap(fileName);
+            imagePreview->setPixmap(pixmap.scaled(80, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            imagePath = fileName;
+        }
+    });
+
+    // Buttons
     QHBoxLayout* buttonLayout = new QHBoxLayout;
-    QPushButton* cancelButton = createStyledButton("Cancel");
-    QPushButton* createButton = createStyledButton("Create Listing", true);
+    QPushButton* cancelButton = new QPushButton("Cancel", dialog);
+    QPushButton* createButton = new QPushButton("Create Listing", dialog);
     
+    cancelButton->setStyleSheet(
+        "background-color: white;"
+        "color: " + darkBlue + ";"
+        "border: 2px solid " + sageGreen + ";"
+    );
+    
+    createButton->setStyleSheet(
+        "background-color: " + sageGreen + ";"
+        "color: white;"
+    );
+
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addWidget(createButton);
+
+    // Add everything to layout
+    layout->addWidget(deptLabel);
+    layout->addWidget(deptCombo);
+    layout->addWidget(sectionLabel);
+    layout->addWidget(sectionCombo);
+    layout->addWidget(titleLabel);
+    layout->addWidget(titleInput);
+    layout->addWidget(courseLabel);
+    layout->addWidget(courseInput);
+    layout->addWidget(lecLabel);
+    layout->addWidget(lecInput);
+    layout->addWidget(priceLabel);
+    layout->addWidget(priceInput);
+    layout->addWidget(imageLabel);
+    layout->addWidget(imageButton);
+    layout->addWidget(imagePreview);
     layout->addLayout(buttonLayout);
 
     // Connect buttons
     connect(cancelButton, &QPushButton::clicked, dialog, &QDialog::reject);
     connect(createButton, &QPushButton::clicked, [=]() {
-        if (categoryCombo->currentText() == "Textbooks") {
-            // Validate textbook form
-            if (nameInput->text().isEmpty() || deptInput->text().isEmpty() || 
-                priceInput->text().isEmpty()) {
-                QMessageBox::warning(dialog, "Validation Error", 
-                    "Please fill in all required fields.");
-                return;
+        if (titleInput->text().isEmpty() || courseInput->text().isEmpty() || 
+            priceInput->text().isEmpty()) {
+            QMessageBox::warning(dialog, "Validation Error", 
+                "Please fill in all required fields.");
+            return;
+        }
+
+        QString destPath;
+        if (!imagePath.isEmpty()) {
+            // Create assets directory if it doesn't exist
+            QString assetDir = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/";
+            QDir().mkpath(assetDir);
+            
+            // Copy image to assets with unique filename to avoid overwriting
+            QString uniqueFileName = QString::number(QDateTime::currentSecsSinceEpoch()) + "_" + QFileInfo(imagePath).fileName();
+            destPath = assetDir + uniqueFileName;
+            
+            // Remove existing file if it exists
+            if (QFile::exists(destPath)) {
+                QFile::remove(destPath);
             }
             
-            // Get selected course codes
-            QStringList selectedCodes;
-            for (auto item : codesWidget->selectedItems()) {
-                selectedCodes.append(item->text());
+            // Copy the new file
+            if (!QFile::copy(imagePath, destPath)) {
+                qDebug() << "Failed to copy image file to:" << destPath;
+                destPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/default_book.jpg";
             }
-            
-            // Create textbook listing in database
-            // You'll need to implement this in DatabaseManager
-            // dbManager->createTextbookListing(...);
-            
+        } else {
+            // Set default image path if no image was selected
+            destPath = QCoreApplication::applicationDirPath() + "/../assets/images/textbooks/default_book.jpg";
+        }
+
+        qDebug() << "Image path being saved:" << destPath;  // Debug line
+
+        // Add this part - actually create the listing
+        if (dbManager->createTextbookListing(
+            deptCombo->currentText(),
+            lecInput->text(),
+            sectionCombo->currentText(),
+            {courseInput->text()},
+            titleInput->text(),
+            "", // Author can be added later
+            priceInput->text().toDouble(),
+            destPath
+        )) {
+            QMessageBox::information(dialog, "Success", 
+                "Listing created successfully!");
+            refreshListings();  // Refresh after successful creation
             dialog->accept();
+        } else {
+            QMessageBox::warning(dialog, "Error", 
+                "Failed to create listing. Please try again.");
         }
     });
-    
+
+    // Show dialog
     dialog->exec();
 }
+
+
 
 QString ProfilePage::handleImageUpload() {
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -491,6 +598,36 @@ bool ProfilePage::validateListingForm(const QString& title, const QString& price
     }
     
     return true;
+}
+
+void ProfilePage::refreshListings() {
+    // Clear existing grid
+    QLayoutItem* child;
+    while ((child = listingsGrid->takeAt(0)) != nullptr) {
+        delete child->widget();
+        delete child;
+    }
+
+    // Get listings for current user from database
+    auto listings = dbManager->getTextbooks("", "", "", "", "", 1, 100); // Get all listings
+    
+    // Add new listing cards to grid
+    int row = 0, col = 0;
+    for (const auto& book : listings) {
+        QWidget* card = createListingCard(
+            book.title, 
+            book.price, 
+            "Active", // You might want to add status to your Textbook class
+            book.getImagePath()
+        );
+        listingsGrid->addWidget(card, row, col);
+        
+        col++;
+        if (col >= 2) {  // 2 cards per row
+            col = 0;
+            row++;
+        }
+    }
 }
 
 void ProfilePage::extractNameFromEmail() {
@@ -613,6 +750,7 @@ void ProfilePage::saveMajorAndSemester() {
 
 void ProfilePage::handleCreateListing() {
     showCreateListingDialog();
+    refreshListings();  // Refresh after successful creation
 }
 
 void ProfilePage::handleRemoveListing() {
