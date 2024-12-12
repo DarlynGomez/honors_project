@@ -245,34 +245,7 @@ QWidget* ProfilePage::createListingsSection() {
     return scrollArea;
 }
 
-QWidget* ProfilePage::createOrderHistorySection() {
-    QScrollArea* scrollArea = createStyledScrollArea();
-    QWidget* contentWidget = new QWidget;
-    QVBoxLayout* layout = new QVBoxLayout(contentWidget);
-    layout->setSpacing(20);
-    layout->setContentsMargins(0, 0, 20, 0);
 
-    QLabel* title = new QLabel("Order History");
-    title->setStyleSheet(
-        "font-size: 24px;"
-        "font-weight: bold;"
-        "color: " + darkBlue + ";"
-    );
-    layout->addWidget(title);
-
-    QLabel* placeholder = new QLabel("No orders yet");
-    placeholder->setStyleSheet(
-        "color: #666;"
-        "font-size: 16px;"
-        "padding: 40px;"
-    );
-    placeholder->setAlignment(Qt::AlignCenter);
-    layout->addWidget(placeholder);
-
-    layout->addStretch();
-    scrollArea->setWidget(contentWidget);
-    return scrollArea;
-}
 
 QPushButton* ProfilePage::createStyledButton(const QString& text, bool isPrimary) {
     QPushButton* button = new QPushButton(text);
@@ -554,6 +527,60 @@ void ProfilePage::loadUserProfile() {
         }
     }
 }
+
+QWidget* ProfilePage::createOrderHistorySection() {
+    QWidget* orderHistoryWidget = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(orderHistoryWidget);
+
+    // Add order items to the layout
+    QWidget* order1 = createOrderItem("CSC 101: Introduction to Computer Science", 59.99, "Shipped", "path_to_image_of_CSC101_book.jpg");
+    layout->addWidget(order1);
+
+    QWidget* order2 = createOrderItem("Gilgamesh", 14.99, "Delivered", "path_to_image_of_Gilgamesh.jpg");
+    layout->addWidget(order2);
+
+    // You can add more orders as needed
+
+    return orderHistoryWidget;
+}
+
+QWidget* ProfilePage::createOrderItem(const QString& title, double price, const QString& status, const QString& imagePath) {
+    QWidget* orderWidget = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(orderWidget);
+
+    QLabel* titleLabel = new QLabel(title);
+    QLabel* priceLabel = new QLabel(QString("$%1").arg(price));
+    QLabel* statusLabel = new QLabel(status);
+
+    // Add image if the path is provided
+    QLabel* imageLabel = new QLabel();
+    if (!imagePath.isEmpty()) {
+        QPixmap pixmap(imagePath);
+        imageLabel->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio));
+    }
+    
+    layout->addWidget(titleLabel);
+    layout->addWidget(priceLabel);
+    layout->addWidget(statusLabel);
+    layout->addWidget(imageLabel);
+
+    return orderWidget;
+}
+
+void ProfilePage::viewOrderHistory() {
+    // Example implementation
+    qDebug() << "Viewing order history...";
+    // Code to display order history goes here
+}
+
+void ProfilePage::handleOrderPlacement() {
+    // Example implementation
+    qDebug() << "Handling order placement...";
+    // Code to handle placing an order goes here
+}
+
+
+
 
 void ProfilePage::saveMajorAndSemester() {
     QString selectedMajor = majorCombo->currentText();

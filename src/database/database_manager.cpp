@@ -76,17 +76,37 @@ void DatabaseManager::createTables() {
 
 // Adds item into cart database after add to cart is clciked
 bool DatabaseManager::addToCart(const QString& userEmail, const QString& productId, int quantity) {
-    quantity = 1;
-    QSqlQuery query;
-    query.prepare(
-        "INSERT INTO cart (user_email, product_id, quantity) "
-        "VALUES (?, ?, ?)"
-    );
-    query.addBindValue(userEmail);
-    query.addBindValue(productId);
-    query.addBindValue(quantity);
-    return query.exec();
+    try {
+        // Create a QSqlQuery object to use SQL queries
+        QSqlQuery query;
+
+        // Prepares my SQL query object to add data in cart table
+        query.prepare(
+            "INSERT INTO cart (user_email, product_id, quantity) "
+            "VALUES (?, ?, ?)"
+        );
+
+        // Adds input paramters to queries
+        query.addBindValue(userEmail);  // User's email address.
+        query.addBindValue(productId);  // Product ID being added to the cart.
+        query.addBindValue(quantity);   // Quantity of the product being added.
+
+        // Execute the query, if fails, throw an exception
+        if (!query.exec()) {
+            // Throws an exception with the error message
+            throw std::runtime_error("Error executing query: " + query.lastError().text().toStdString());
+        }
+
+        // If no errors, return true indicating success
+        qDebug() << "Succesfully added to cart";
+        return true;
+    } catch (const std::exception& e) {
+        // Catch any exceptions and log the error message
+        qDebug() << "Exception in addToCart:" << e.what();
+        return false;  // Return false to show failure
+    }
 }
+
 
 // Adds textbook Listing onto DB
 bool DatabaseManager::createTextbookListing(
