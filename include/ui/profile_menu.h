@@ -15,7 +15,6 @@ signals:
     void logoutRequested();
 
 private:
-    void setupUI();
     QPushButton* profileButton;
     QPushButton* logoutButton;
 };

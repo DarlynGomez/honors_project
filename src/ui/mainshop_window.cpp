@@ -33,6 +33,7 @@ MainShopWindow::MainShopWindow(Authenticator* auth, DatabaseManager* db, const Q
     , suppliesButton(nullptr)
     , clothingButton(nullptr)
     , profilePage(nullptr)
+    , profileMenu(nullptr)
 {
     setupUI();
     handleFeaturedTabChange(0);
@@ -108,99 +109,73 @@ QPushButton* MainShopWindow::createPreNavButton(const QString& iconPath, const Q
 }
 
 void MainShopWindow::setupNavBar() {
+    // Create immovable toolbar for navigation
     navBar = new QToolBar(this);
     navBar->setMovable(false);
     navBar->setStyleSheet(
         "QToolBar {"
         "    background-color: " + white + ";"
         "    border-bottom: 1px solid #E0E0E0;"
-        "    padding: 10px;"
+        "    padding: 5px 20px;"
         "}"
     );
 
-    // BMCC Logo
-    QLabel* logo = new QLabel("BMCC E-Store", this);
-    logo->setStyleSheet(
-        "font-size: 24px;"
+    // Create container for logo and search
+    QWidget* leftContainer = new QWidget;
+    QHBoxLayout* leftLayout = new QHBoxLayout(leftContainer);
+    leftLayout->setSpacing(20);
+    leftLayout->setContentsMargins(0, 0, 0, 0);
+
+    // Logo
+    logoLabel = new QLabel("BMCC E-Store", this);
+    logoLabel->setStyleSheet(
+        "font-size: 22px;"
         "font-weight: bold;"
         "color: " + darkBlue + ";"
-        "font-family: -apple-system, BlinkMacSystemFont;"
-        "margin-right: 20px;"
-        "background: transparent;"
+        "padding: 0 20px;"
     );
-    logo->setCursor(Qt::PointingHandCursor);
-    logo->installEventFilter(this);
-    navBar->addWidget(logo);
+    logoLabel->setCursor(Qt::PointingHandCursor);
+    logoLabel->installEventFilter(this);
+    leftLayout->addWidget(logoLabel);
 
-    // Search Bar
+    // Search bar
     searchBar = new QLineEdit(this);
     searchBar->setPlaceholderText("Search products...");
-    searchBar->setMinimumWidth(400);
+    searchBar->setFixedWidth(300);
     searchBar->setStyleSheet(
         "QLineEdit {"
         "    padding: 8px 15px;"
-        "    border: 2px solid #E0E0E0;"
+        "    border: 1px solid #E0E0E0;"
         "    border-radius: 20px;"
         "    font-size: 14px;"
-        "    background-color: white;"
+        "    background-color: " + white + ";"
         "}"
         "QLineEdit:focus {"
         "    border-color: " + sageGreen + ";"
         "}"
     );
-    navBar->addWidget(searchBar);
+    leftLayout->addWidget(searchBar);
 
-    // Spacer
+    navBar->addWidget(leftContainer);
+
+    // Add expanding spacer
     QWidget* spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     navBar->addWidget(spacer);
 
-    // Create container for icons
+    // Container for right-aligned navigation buttons
     QWidget* iconContainer = new QWidget;
     QHBoxLayout* iconLayout = new QHBoxLayout(iconContainer);
-    iconLayout->setSpacing(20);  // Even spacing between icons
-    iconLayout->setContentsMargins(0, 0, 20, 0);  // Right margin before user section
+    iconLayout->setSpacing(20);
+    iconLayout->setContentsMargins(0, 0, 20, 0);
 
-    // Cart Button
+    // Create and style buttons
     cartButton = new QPushButton(this);
-    QString cartIconPath = QCoreApplication::applicationDirPath() + "/../assets/images/nav/cartIcon.png";
-    cartButton->setIcon(QIcon(cartIconPath));
-    cartButton->setIconSize(QSize(24, 24));
-    cartButton->setStyleSheet(
-        "QPushButton {"
-        "    border: none;"
-        "    padding: 8px;"
-        "    border-radius: 20px;"
-        "    background-color: transparent;"
-        "}"
-        "QPushButton:hover {"
-        "    background-color: " + lightSage + ";"
-        "}"
-    );
-
-    // Wishlist Button
     wishlistButton = new QPushButton(this);
-    QString wishlistIconPath = QCoreApplication::applicationDirPath() + "/../assets/images/nav/wishlistIcon.png";
-    wishlistButton->setIcon(QIcon(wishlistIconPath));
-    wishlistButton->setIconSize(QSize(24, 24));
-    wishlistButton->setStyleSheet(
-        "QPushButton {"
-        "    border: none;"
-        "    padding: 8px;"
-        "    border-radius: 20px;"
-        "    background-color: transparent;"
-        "}"
-        "QPushButton:hover {"
-        "    background-color: " + lightSage + ";"
-        "}"
-    );
-
-    // Profile Button
     profileButton = new QPushButton(this);
-    QString profileIconPath = QCoreApplication::applicationDirPath() + "/../assets/images/nav/profileIcon.png";
-    profileButton->setIcon(QIcon(profileIconPath));
-    profileButton->setIconSize(QSize(24, 24));
-    profileButton->setStyleSheet(
+
+    // Common button style
+    const QString buttonStyle = 
         "QPushButton {"
         "    border: none;"
         "    padding: 8px;"
@@ -210,9 +185,40 @@ void MainShopWindow::setupNavBar() {
         "QPushButton:hover {"
         "    background-color: " + lightSage + ";"
         "}"
-    );
+        "QPushButton:pressed {"
+        "    background-color: " + sageGreen + ";"
+        "}";
 
-    // Add buttons to icon container
+    // Set icons and styles
+    cartButton->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../assets/images/nav/cartIcon.png"));
+    wishlistButton->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../assets/images/nav/wishlistIcon.png"));
+    profileButton->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../assets/images/nav/profileIcon.png"));
+
+    // Set icon sizes
+    cartButton->setIconSize(QSize(24, 24));
+    wishlistButton->setIconSize(QSize(24, 24));
+    profileButton->setIconSize(QSize(24, 24));
+
+    // Apply styles
+    cartButton->setStyleSheet(buttonStyle);
+    wishlistButton->setStyleSheet(buttonStyle);
+    profileButton->setStyleSheet(buttonStyle);
+
+    // Add hover effect animations
+    for (QPushButton* button : {cartButton, wishlistButton, profileButton}) {
+        QGraphicsOpacityEffect* opacity = new QGraphicsOpacityEffect(button);
+        button->setGraphicsEffect(opacity);
+        
+        // Store the animation as a property of the button
+        QPropertyAnimation* hoverAnimation = new QPropertyAnimation(opacity, "opacity");
+        hoverAnimation->setDuration(200);
+        button->setProperty("hoverAnimation", QVariant::fromValue(hoverAnimation));
+        
+        // Install event filter for hover effects
+        button->installEventFilter(this);
+    }
+
+    // Add buttons to layout
     iconLayout->addWidget(cartButton);
     iconLayout->addWidget(wishlistButton);
     iconLayout->addWidget(profileButton);
@@ -220,97 +226,131 @@ void MainShopWindow::setupNavBar() {
     // Add the icon container to navbar
     navBar->addWidget(iconContainer);
 
-    // User email label
-    QLabel* userLabel = new QLabel(currentUserEmail);
-    userLabel->setStyleSheet("color: " + darkBlue + "; margin-right: 10px;");
-    navBar->addWidget(userLabel);
-
-    addToolBar(navBar);
-
-    // Setup profile menu
+    // Initialize profile menu
     setupProfileMenu();
 
-    // Connect signals
-    connect(cartButton, &QPushButton::clicked, this, &MainShopWindow::showCart);
-    connect(profileButton, &QPushButton::clicked, this, &MainShopWindow::toggleProfileMenu);
-    connect(searchBar, &QLineEdit::returnPressed, this, &MainShopWindow::handleSearch);
+    // Connect button signals
+    connect(cartButton, &QPushButton::clicked, this, [this]() {
+        QGraphicsOpacityEffect* effect = new QGraphicsOpacityEffect(cartButton);
+        cartButton->setGraphicsEffect(effect);
+
+        QPropertyAnimation* clickAnim = new QPropertyAnimation(effect, "opacity");
+        clickAnim->setDuration(100);
+        clickAnim->setStartValue(1.0);
+        clickAnim->setEndValue(0.5);
+        clickAnim->setEasingCurve(QEasingCurve::OutQuad);
+
+        QPropertyAnimation* revertAnim = new QPropertyAnimation(effect, "opacity");
+        revertAnim->setDuration(100);
+        revertAnim->setStartValue(0.5);
+        revertAnim->setEndValue(1.0);
+        revertAnim->setEasingCurve(QEasingCurve::InQuad);
+
+        connect(clickAnim, &QPropertyAnimation::finished, [=]() {
+            revertAnim->start(QAbstractAnimation::DeleteWhenStopped);
+        });
+
+        connect(revertAnim, &QPropertyAnimation::finished, [=]() {
+            showCart();
+        });
+
+        clickAnim->start(QAbstractAnimation::DeleteWhenStopped);
+    });
+
+    connect(wishlistButton, &QPushButton::clicked, this, [this]() {
+        QGraphicsOpacityEffect* effect = new QGraphicsOpacityEffect(wishlistButton);
+        wishlistButton->setGraphicsEffect(effect);
+
+        QPropertyAnimation* clickAnim = new QPropertyAnimation(effect, "opacity");
+        clickAnim->setDuration(100);
+        clickAnim->setStartValue(1.0);
+        clickAnim->setEndValue(0.5);
+        clickAnim->setEasingCurve(QEasingCurve::OutQuad);
+
+        QPropertyAnimation* revertAnim = new QPropertyAnimation(effect, "opacity");
+        revertAnim->setDuration(100);
+        revertAnim->setStartValue(0.5);
+        revertAnim->setEndValue(1.0);
+        revertAnim->setEasingCurve(QEasingCurve::InQuad);
+
+        connect(clickAnim, &QPropertyAnimation::finished, [=]() {
+            revertAnim->start(QAbstractAnimation::DeleteWhenStopped);
+        });
+
+        connect(revertAnim, &QPropertyAnimation::finished, [=]() {
+            showWishlist();
+        });
+
+        clickAnim->start(QAbstractAnimation::DeleteWhenStopped);
+    });
+
+    connect(profileButton, &QPushButton::clicked, this, [this]() {
+        QGraphicsOpacityEffect* effect = new QGraphicsOpacityEffect(profileButton);
+        profileButton->setGraphicsEffect(effect);
+
+        QPropertyAnimation* clickAnim = new QPropertyAnimation(effect, "opacity");
+        clickAnim->setDuration(100);
+        clickAnim->setStartValue(1.0);
+        clickAnim->setEndValue(0.5);
+        clickAnim->setEasingCurve(QEasingCurve::OutQuad);
+
+        QPropertyAnimation* revertAnim = new QPropertyAnimation(effect, "opacity");
+        revertAnim->setDuration(100);
+        revertAnim->setStartValue(0.5);
+        revertAnim->setEndValue(1.0);
+        revertAnim->setEasingCurve(QEasingCurve::InQuad);
+
+        connect(clickAnim, &QPropertyAnimation::finished, [=]() {
+            revertAnim->start(QAbstractAnimation::DeleteWhenStopped);
+        });
+
+        connect(revertAnim, &QPropertyAnimation::finished, [=]() {
+            toggleProfileMenu();
+        });
+
+        clickAnim->start(QAbstractAnimation::DeleteWhenStopped);
+    });
+
+    // Add navbar to main window
+    addToolBar(navBar);
 }
 
 // Implement the showProfile method
 void MainShopWindow::showProfile() {
-    // If profile page doesn't exist, create it
+    qDebug() << "showProfile called in MainShopWindow";
     if (!profilePage) {
+        qDebug() << "Creating new profile page";
         profilePage = new ProfilePage(authenticator, dbManager, currentUserEmail, this);
         contentStack->addWidget(profilePage);
     }
-
-    // Hide profile menu
-    profileMenu->hide();
-
-    // Hide homepage stack and show content stack
+    
     homepageStack->hide();
     contentStack->show();
-
-    // Switch to profile page with fade transition
-    QWidget* currentWidget = contentStack->currentWidget();
-    profilePage->setWindowOpacity(0.0);
     contentStack->setCurrentWidget(profilePage);
-
-    // Fade out current widget
-    QPropertyAnimation* fadeOut = new QPropertyAnimation(currentWidget, "windowOpacity");
-    fadeOut->setDuration(200);
-    fadeOut->setStartValue(1.0);
-    fadeOut->setEndValue(0.0);
-    
-    // Fade in profile page
-    QPropertyAnimation* fadeIn = new QPropertyAnimation(profilePage, "windowOpacity");
-    fadeIn->setDuration(200);
-    fadeIn->setStartValue(0.0);
-    fadeIn->setEndValue(1.0);
-
-    fadeOut->start(QAbstractAnimation::DeleteWhenStopped);
-    fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
+    profileMenu->hide();
+    qDebug() << "Profile page should be visible now";
 }
 
 
 // Sets up profile drop down/ pop-up menu
 void MainShopWindow::setupProfileMenu() {
-    profileMenu = new ProfileMenu(this);
-    profileMenu->hide();
-    
-    // Connect signals
-    connect(profileMenu, &ProfileMenu::profileRequested, this, &MainShopWindow::showProfile);
-    connect(profileMenu, &ProfileMenu::logoutRequested, 
-            this, &MainShopWindow::handleLogout);
-    connect(profileMenu, &ProfileMenu::profileRequested, 
-            this, &MainShopWindow::showProfile); // We'll implement this later
+    if (!profileMenu) {
+        qDebug() << "Creating profile menu";
+        profileMenu = new ProfileMenu(this);
+        profileMenu->hide();
+        
+        // Use direct connection syntax
+        connect(profileMenu, SIGNAL(profileRequested()), this, SLOT(showProfile()));
+        connect(profileMenu, SIGNAL(logoutRequested()), this, SLOT(handleLogout()));
+    }
 }
 
 void MainShopWindow::toggleProfileMenu() {
     if (profileMenu->isHidden()) {
-        // Calculate position relative to the profile button
-        QPoint buttonPos = profileButton->mapToGlobal(QPoint(0, 0));
-        QPoint menuPos = buttonPos + QPoint(
-            profileButton->width() - profileMenu->width(),  // Align right edge
-            profileButton->height() + 5  // Small gap below button
-        );
-        
-        // Move menu to calculated position
-        profileMenu->move(mapFromGlobal(menuPos));
-        
-        // Show menu with fade effect
-        QGraphicsOpacityEffect* opacity = new QGraphicsOpacityEffect(profileMenu);
-        profileMenu->setGraphicsEffect(opacity);
-        
-        QPropertyAnimation* fadeIn = new QPropertyAnimation(opacity, "opacity");
-        fadeIn->setDuration(150);
-        fadeIn->setStartValue(0.0);
-        fadeIn->setEndValue(1.0);
-        fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
-        
+        QPoint pos = profileButton->mapToGlobal(QPoint(0, profileButton->height()));
+        pos.setX(pos.x() + profileButton->width() - profileMenu->width());
+        profileMenu->move(pos);
         profileMenu->show();
-        
-        // Install event filter to handle clicking outside
         qApp->installEventFilter(this);
     } else {
         profileMenu->hide();
@@ -324,9 +364,16 @@ void MainShopWindow::toggleProfileMenu() {
 
 bool MainShopWindow::eventFilter(QObject* watched, QEvent* event) {
     if (event->type() == QEvent::MouseButtonPress) {
+        // Add this block to handle logo clicks
+        if (watched == logoLabel) {
+            showHomepage();
+            return true;
+        }
+        
+        // Your existing profile menu code
         if (profileMenu && !profileMenu->isHidden()) {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            QPoint globalPos = mouseEvent->globalPosition().toPoint();  // Use globalPosition()
+            QPoint globalPos = mouseEvent->globalPosition().toPoint();
             if (!profileMenu->geometry().contains(mapFromGlobal(globalPos)) &&
                 !profileButton->geometry().contains(mapFromGlobal(globalPos))) {
                 profileMenu->hide();
@@ -339,34 +386,54 @@ bool MainShopWindow::eventFilter(QObject* watched, QEvent* event) {
 }
 
 void MainShopWindow::setupCategoryBar() {
+    // Create container for category navigation
     QWidget* categoryBar = new QWidget(this);
     QHBoxLayout* categoryLayout = new QHBoxLayout(categoryBar);
-    categoryLayout->setSpacing(20);
-    categoryLayout->setContentsMargins(20, 10, 20, 10);
+    categoryLayout->setSpacing(5);  // Reduced spacing between categories
+    categoryLayout->setContentsMargins(20, 8, 20, 8);  // Comfortable padding
 
-    // Create buttons
-    textbooksButton = createCategoryButton("Textbooks");
-    furnitureButton = createCategoryButton("Furniture");
-    electronicsButton = createCategoryButton("Electronics");
-    suppliesButton = createCategoryButton("School Supplies");
-    clothingButton = createCategoryButton("Clothing");
+    // Create home button for returning to main page
+    homeButton = new QPushButton("Home", this);
+    applyButtonStyle(homeButton, true);
+    
+    // Create category navigation buttons
+    textbooksButton = new QPushButton("Textbooks", this);
+    furnitureButton = new QPushButton("Furniture", this);
+    electronicsButton = new QPushButton("Electronics", this);
+    suppliesButton = new QPushButton("Supplies", this);
+    clothingButton = new QPushButton("Clothing", this);
 
-    // Add buttons to layout
-    categoryLayout->addWidget(textbooksButton);
-    categoryLayout->addWidget(furnitureButton);
-    categoryLayout->addWidget(electronicsButton);
-    categoryLayout->addWidget(suppliesButton);
-    categoryLayout->addWidget(clothingButton);
+    // Collect all buttons for consistent styling
+    QVector<QPushButton*> buttons = {
+        homeButton, textbooksButton, furnitureButton, 
+        electronicsButton, suppliesButton, clothingButton
+    };
+    
+    // Apply consistent styling to all category buttons
+    for(auto button : buttons) {
+        applyButtonStyle(button, true);
+        categoryLayout->addWidget(button);
+    }
 
-    // Add to central widget's layout
-    centralWidget()->layout()->addWidget(categoryBar);
+    // Add subtle dividers between categories for visual separation
+    for(int i = 0; i < buttons.size() - 1; i++) {
+        QFrame* divider = new QFrame;
+        divider->setFrameShape(QFrame::VLine);
+        divider->setStyleSheet("background-color: #E0E0E0;");
+        divider->setFixedWidth(1);
+        categoryLayout->addWidget(divider);
+    }
 
-    // Connect signals
+    // Connect category buttons to their respective views
+    connect(homeButton, &QPushButton::clicked, this, &MainShopWindow::showHomepage);
     connect(textbooksButton, &QPushButton::clicked, this, &MainShopWindow::showTextbooks);
     connect(furnitureButton, &QPushButton::clicked, this, &MainShopWindow::showFurniture);
     connect(electronicsButton, &QPushButton::clicked, this, &MainShopWindow::showElectronics);
     connect(suppliesButton, &QPushButton::clicked, this, &MainShopWindow::showSchoolSupplies);
     connect(clothingButton, &QPushButton::clicked, this, &MainShopWindow::showClothing);
+
+    // Add category bar to main layout
+    centralWidget()->layout()->addWidget(categoryBar);
 }
 
 void MainShopWindow::setupContentArea() {
@@ -385,6 +452,26 @@ void MainShopWindow::setupContentArea() {
 
 void MainShopWindow::setupStyles() {
     // Additional styles can be added here
+}
+
+void MainShopWindow::applyButtonStyle(QPushButton* button, bool isCategory) {
+    // Apply consistent styling to buttons with size variation based on type
+    button->setStyleSheet(
+        "QPushButton {"
+        "    color: " + darkBlue + ";"
+        "    background: none;"
+        "    border: none;"
+        "    padding: " + (isCategory ? "8px 15px" : "10px 20px") + ";"  // Different padding for categories
+        "    font-size: 14px;"
+        "    font-weight: " + (isCategory ? "normal" : "bold") + ";"  // Bold for non-category buttons
+        "    min-width: " + (isCategory ? "80px" : "100px") + ";"  // Smaller width for category buttons
+        "    transition: all 0.3s;"  // Smooth transition for all changes
+        "}"
+        "QPushButton:hover {"
+        "    color: " + sageGreen + ";"  // Change text color on hover
+        "    background-color: " + lightSage + ";"  // Subtle background on hover
+        "}"
+    );
 }
 
 
@@ -712,6 +799,7 @@ void MainShopWindow::handleLogout() {
 }
 
 void MainShopWindow::showHomepage() {
+    // Hide category content and show homepage
     contentStack->hide();
     homepageStack->show();
 }

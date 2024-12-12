@@ -11,6 +11,7 @@
 #include <QTextEdit>
 #include <QDialog>
 #include <QFileDialog>
+#include <QRegularExpression>
 #include <QMessageBox>
 #include "../auth/authenticator.h"
 #include "../database/database_manager.h"

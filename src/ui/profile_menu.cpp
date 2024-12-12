@@ -1,22 +1,15 @@
 #include "ui/profile_menu.h"
 #include <QVBoxLayout>
+#include <QDebug>
 
 ProfileMenu::ProfileMenu(QWidget *parent) : QWidget(parent) {
-    setupUI();
+    setFixedWidth(200);
     
-    // Connect signals
-    connect(profileButton, &QPushButton::clicked, this, &ProfileMenu::profileRequested);
-    connect(logoutButton, &QPushButton::clicked, this, &ProfileMenu::logoutRequested);
-}
-
-void ProfileMenu::setupUI() {
-    setFixedWidth(200);  // Set fixed width for menu
     setStyleSheet(
         "QWidget {"
         "    background-color: white;"
         "    border: 1px solid #E0E0E0;"
         "    border-radius: 8px;"
-        "    padding: 5px;"
         "}"
     );
 
@@ -24,20 +17,16 @@ void ProfileMenu::setupUI() {
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    // Create buttons
     profileButton = new QPushButton("Profile", this);
     logoutButton = new QPushButton("Logout", this);
 
-    // Update button styles
-    QString buttonStyle =
+    QString buttonStyle = 
         "QPushButton {"
-        "    color: #2C3E50;"
-        "    background: none;"
         "    border: none;"
         "    padding: 15px 20px;"
         "    text-align: left;"
         "    font-size: 14px;"
-        "    width: 100%;"  // Make buttons fill width
+        "    color: #2C3E50;"
         "}"
         "QPushButton:hover {"
         "    background-color: #E8F0E3;"
@@ -46,7 +35,9 @@ void ProfileMenu::setupUI() {
     profileButton->setStyleSheet(buttonStyle);
     logoutButton->setStyleSheet(buttonStyle);
 
-    // Add buttons to layout
     layout->addWidget(profileButton);
     layout->addWidget(logoutButton);
+
+    connect(profileButton, &QPushButton::clicked, this, &ProfileMenu::profileRequested);
+    connect(logoutButton, &QPushButton::clicked, this, &ProfileMenu::logoutRequested);
 }
